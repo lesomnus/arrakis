@@ -13,6 +13,7 @@ import (
 	"text/template"
 
 	"github.com/lesomnus/arrakis/arrk"
+	"github.com/lesomnus/arrakis/render"
 	"go.yaml.in/yaml/v4"
 )
 
@@ -37,20 +38,18 @@ func main() {
 	ctx := context.Background()
 	conf := arrk.NewConfig()
 
-	walk(ctx, conf, root, func(c arrk.Config, v arrk.Item) error {
-		fmt.Printf("Origin: %s -> Target: %s\n", v.Origin, v.Target)
-		return nil
-	})
+	r := render.NewTextPrinter(os.Stdout)
+	defer r.Flush()
+
+	walk(ctx, conf, root, r)
 }
 
-type handlerFunc func(c arrk.Config, v arrk.Item) error
-
-func walk(ctx context.Context, c arrk.Config, p string, h handlerFunc) error {
+func walk(ctx context.Context, c arrk.Config, p string, r render.Renderer) error {
 	c, err := readConfig(ctx, c, filepath.Join(p, "config.yaml"))
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
-	if err := visit(ctx, c, p, h); err != nil {
+	if err := visit(ctx, c, p, r); err != nil {
 		return err
 	}
 
@@ -70,7 +69,7 @@ func walk(ctx context.Context, c arrk.Config, p string, h handlerFunc) error {
 
 		p_next := filepath.Join(p, d.Name())
 		if len(c.Resolvers) == 0 {
-			if err := walk(ctx, c_, p_next, h); err != nil {
+			if err := walk(ctx, c_, p_next, r); err != nil {
 				fmt.Printf("err: %v\n", err)
 			}
 			continue
@@ -90,7 +89,7 @@ var teplateFuncs = template.FuncMap{
 	},
 }
 
-func visit(ctx context.Context, c arrk.Config, p string, h handlerFunc) error {
+func visit(ctx context.Context, c arrk.Config, p string, r render.Renderer) error {
 	if len(c.Resolvers) == 0 {
 		return nil
 	}
@@ -100,7 +99,7 @@ func visit(ctx context.Context, c arrk.Config, p string, h handlerFunc) error {
 		return err
 	}
 
-	for _, resolver := range c.Resolvers {
+	for name, resolver := range c.Resolvers {
 		tmpl := template.New("")
 		tmpl = tmpl.Funcs(teplateFuncs)
 		tmpl, err := tmpl.Parse(resolver.Path)
@@ -130,16 +129,20 @@ func visit(ctx context.Context, c arrk.Config, p string, h handlerFunc) error {
 					return err
 				}
 
-				target := c.Target.Path
+				target_p := c.Target.Path
 				if c.Target.Suffix != "" {
-					target = path.Join(target, c.Target.Suffix)
+					target_p = path.Join(target_p, c.Target.Suffix)
 				}
-				target = path.Join(target, buff.String())
+				target_p = path.Join(target_p, buff.String())
 				buff.Reset()
 
-				if err := h(c, arrk.Item{
+				if err := r.Render(c, arrk.Item{
 					Origin: c.Path + "/" + version + "/" + source.Os() + "/" + source.Arch(),
-					Target: target,
+					Target: target_p,
+
+					Name:     name,
+					Version:  version,
+					Platform: target,
 				}); err != nil {
 					return err
 				}

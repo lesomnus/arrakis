@@ -10,4 +10,8 @@ type Value struct {
 type Item struct {
 	Origin string
 	Target string
+
+	Name     string
+	Version  string
+	Platform Platform
 }
