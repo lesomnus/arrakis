@@ -13,11 +13,20 @@ import (
 	"text/template"
 
 	"github.com/lesomnus/arrakis/arrk"
+	"github.com/lesomnus/arrakis/cmd"
 	"github.com/lesomnus/arrakis/render"
 	"go.yaml.in/yaml/v4"
 )
 
 func main() {
+	c := cmd.NewCmdRoot()
+	if err := c.Run(context.Background(), os.Args[1:]); err != nil {
+		fmt.Println("app exited with error:", err)
+		os.Exit(1)
+	}
+}
+
+func _main() {
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: arrakis <directory-path>")
 		os.Exit(1)
@@ -120,12 +129,14 @@ func visit(ctx context.Context, c arrk.Config, p string, r render.Renderer) erro
 		buff := &strings.Builder{}
 		for _, version := range versions {
 			for source, target := range expanded {
-				value := arrk.Value{
-					Version: version,
-					Os:      target.Os(),
-					Arch:    target.Arch(),
+				item := arrk.Item{
+					Path:     c.Path,
+					Name:     name,
+					Version:  version,
+					Platform: target,
 				}
-				if err := tmpl.Execute(buff, value); err != nil {
+
+				if err := tmpl.Execute(buff, item); err != nil {
 					return err
 				}
 
@@ -136,14 +147,10 @@ func visit(ctx context.Context, c arrk.Config, p string, r render.Renderer) erro
 				target_p = path.Join(target_p, buff.String())
 				buff.Reset()
 
-				if err := r.Render(c, arrk.Item{
-					Origin: c.Path + "/" + version + "/" + source.Os() + "/" + source.Arch(),
-					Target: target_p,
+				item.Origin = c.Path + "/" + version + "/" + string(source.Os()) + "/" + string(source.Arch())
+				item.Target = target_p
 
-					Name:     name,
-					Version:  version,
-					Platform: target,
-				}); err != nil {
+				if err := r.Render(c, item); err != nil {
 					return err
 				}
 			}

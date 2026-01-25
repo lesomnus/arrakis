@@ -1,3 +1,3 @@
 ```sh
-curl -LO http://localhost:8080/github.com/protocolbuffers/protobuf/protoc/linux/$(uname -m)
+curl -LO http://localhost:8080/github.com/protocolbuffers/protobuf/protoc@3.33/linux/$(uname -m)
 ```

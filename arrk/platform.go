@@ -35,29 +35,29 @@ func (p Platform) String() string {
 	return string(p)
 }
 
-func (p Platform) Split() (os string, arch string, variant string) {
+func (p Platform) Split() (os Os, arch Arch, variant Variant) {
 	es := strings.SplitN(string(p), "/", 3)
-	os = es[0]
+	os = Os(es[0])
 	if len(es) > 1 {
-		arch = es[1]
+		arch = Arch(es[1])
 	}
 	if len(es) > 2 {
-		variant = es[2]
+		variant = Variant(es[2])
 	}
 	return
 }
 
-func (p Platform) Os() string {
+func (p Platform) Os() Os {
 	os, _, _ := p.Split()
 	return os
 }
 
-func (p Platform) Arch() string {
+func (p Platform) Arch() Arch {
 	_, arch, _ := p.Split()
 	return arch
 }
 
-func (p Platform) Variant() string {
+func (p Platform) Variant() Variant {
 	_, _, variant := p.Split()
 	return variant
 }
@@ -83,7 +83,7 @@ func (p Platform) Normalized() Platform {
 
 	p_ := string(p)
 	if arch_ != Arch(arch) {
-		p_ = strings.Join([]string{os, string(arch_), variant}, "/")
+		p_ = strings.Join([]string{string(os), string(arch_), string(variant)}, "/")
 	}
 
 	var ok bool
@@ -94,4 +94,76 @@ func (p Platform) Normalized() Platform {
 	}
 
 	return Platform(p_)
+}
+
+func (a Arch) Is32() bool {
+	switch a {
+	case ArchArm, ArchX86:
+		return true
+	default:
+		return false
+	}
+}
+
+func (a Arch) Is64() bool {
+	switch a {
+	case ArchArm64, ArchAmd64:
+		return true
+	default:
+		return false
+	}
+}
+
+func (a Arch) IsAmd() bool {
+	switch a {
+	case ArchX86, ArchX86_64, ArchAmd64:
+		return true
+	default:
+		return false
+	}
+}
+
+func (a Arch) IsArm() bool {
+	switch a {
+	case ArchArm, ArchArm64:
+		return true
+	default:
+		return false
+	}
+}
+
+func (a Arch) IsAmd32() bool {
+	switch a {
+	case ArchX86:
+		return true
+	default:
+		return false
+	}
+}
+
+func (a Arch) IsAmd64() bool {
+	switch a {
+	case ArchAmd64, ArchX86_64:
+		return true
+	default:
+		return false
+	}
+}
+
+func (a Arch) IsArm32() bool {
+	switch a {
+	case ArchArm:
+		return true
+	default:
+		return false
+	}
+}
+
+func (a Arch) IsArm64() bool {
+	switch a {
+	case ArchArm64:
+		return true
+	default:
+		return false
+	}
 }

@@ -13,16 +13,6 @@ type Config struct {
 	Platforms map[Platform]Platform
 }
 
-type TargetConfig struct {
-	Path   string
-	Suffix string
-}
-
-type ResolverConfig struct {
-	Path      string
-	Platforms map[Platform]Platform
-}
-
 func NewConfig() Config {
 	return Config{
 		Resolvers: make(map[string]ResolverConfig),
@@ -71,4 +61,9 @@ func (c Config) Merge(other *Config) Config {
 	maps.Copy(c_.Platforms, other.Platforms)
 
 	return c_
+}
+
+type TargetConfig struct {
+	Path   string
+	Suffix string
 }
