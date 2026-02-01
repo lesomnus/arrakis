@@ -1,6 +1,6 @@
 module github.com/lesomnus/arrakis
 
-go 1.25.5
+go 1.25.4
 
 require (
 	github.com/lesomnus/xli v0.0.0-20251129214310-274b1fcfb863

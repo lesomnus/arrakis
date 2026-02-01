@@ -1,4 +1,4 @@
-package arrk
+package arks
 
 import (
 	"strings"
@@ -10,7 +10,7 @@ type ResolverConfig struct {
 	Platforms map[Platform]Platform
 }
 
-var teplateFuncs = template.FuncMap{
+var templateFuncs = template.FuncMap{
 	"prefix": func(p string, v string) string {
 		if v == "" {
 			return ""
@@ -22,7 +22,7 @@ var teplateFuncs = template.FuncMap{
 
 func (r ResolverConfig) Build(v Item) (string, error) {
 	tmpl := template.New("")
-	tmpl = tmpl.Funcs(teplateFuncs)
+	tmpl = tmpl.Funcs(templateFuncs)
 	tmpl, err := tmpl.Parse(r.Path)
 	if err != nil {
 		return "", err

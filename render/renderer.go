@@ -1,8 +1,8 @@
 package render
 
-import "github.com/lesomnus/arrakis/arrk"
+import "github.com/lesomnus/arrakis/arks"
 
 type Renderer interface {
-	Render(c arrk.Config, v arrk.Item) error
+	Render(c arks.Config, v arks.Item) error
 	Flush() error
 }

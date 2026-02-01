@@ -1,10 +1,10 @@
-package arrk_test
+package arks_test
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/lesomnus/arrakis/arrk"
+	"github.com/lesomnus/arrakis/arks"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,7 +25,7 @@ func TestPlatform(t *testing.T) {
 			{"linux//v7/", "linux", "", "v7/"},
 		}
 		for _, test := range tests {
-			p := arrk.Platform(test[0])
+			p := arks.Platform(test[0])
 			a, b, c := p.Split()
 			t.Run(fmt.Sprintf("(%s)->%s,%s,%s", p, a, b, c), func(t *testing.T) {
 				x := require.New(t)
@@ -73,8 +73,8 @@ func TestPlatform(t *testing.T) {
 		for _, test := range tests {
 			t.Run(fmt.Sprintf("(%s)->%s", test[0], test[1]), func(t *testing.T) {
 				x := require.New(t)
-				p := arrk.Platform(test[0]).Normalized()
-				x.Equal(arrk.Platform(test[1]), p)
+				p := arks.Platform(test[0]).Normalized()
+				x.Equal(arks.Platform(test[1]), p)
 			})
 		}
 	})

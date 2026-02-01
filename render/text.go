@@ -7,25 +7,25 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/lesomnus/arrakis/arrk"
+	"github.com/lesomnus/arrakis/arks"
 )
 
 type TextPrinter struct {
 	io.Writer
 
-	item_last arrk.Item
+	item_last arks.Item
 	// For each target.
-	items map[string][]arrk.Item
+	items map[string][]arks.Item
 }
 
 func NewTextPrinter(w io.Writer) *TextPrinter {
 	return &TextPrinter{
 		Writer: w,
-		items:  map[string][]arrk.Item{},
+		items:  map[string][]arks.Item{},
 	}
 }
 
-func (p *TextPrinter) Render(c arrk.Config, v arrk.Item) error {
+func (p *TextPrinter) Render(c arks.Config, v arks.Item) error {
 	if p.item_last.Version == v.Version {
 		p.items[v.Target] = append(p.items[v.Target], v)
 		return nil
@@ -40,7 +40,7 @@ func (p *TextPrinter) Render(c arrk.Config, v arrk.Item) error {
 
 func (p *TextPrinter) Flush() error {
 	items := p.items
-	p.items = map[string][]arrk.Item{}
+	p.items = map[string][]arks.Item{}
 	if p.item_last.Name == "" {
 		return nil
 	}
@@ -56,7 +56,7 @@ func (p *TextPrinter) Flush() error {
 		if len(vs) == 0 {
 			continue
 		}
-		slices.SortFunc(vs, func(a, b arrk.Item) int {
+		slices.SortFunc(vs, func(a, b arks.Item) int {
 			return strings.Compare(a.Origin, b.Origin)
 		})
 

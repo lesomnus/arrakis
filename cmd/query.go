@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/lesomnus/arrakis/arrk"
+	"github.com/lesomnus/arrakis/arks"
 	"github.com/lesomnus/xli"
 )
 
@@ -19,14 +19,14 @@ func NewCmdQuery() *xli.Command {
 
 		Handler: xli.OnRun(func(ctx context.Context, cmd *xli.Command, next xli.Next) error {
 			port := os.DirFS("./port")
-			item := arrk.Item{
+			item := arks.Item{
 				Path:     "github.com/protocolbuffers/protobuf",
 				Name:     "protoc",
 				Version:  "1.0.0",
-				Platform: arrk.Platform("linux/arm64/"),
+				Platform: arks.Platform("linux/arm64/"),
 			}
 
-			q := arrk.FsQuerier{FS: port}
+			q := arks.FsQuerier{FS: port}
 			target, err := q.Query(ctx, item)
 			if err != nil {
 				return err

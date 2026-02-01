@@ -1,4 +1,4 @@
-package arrk
+package arks
 
 import (
 	"context"
