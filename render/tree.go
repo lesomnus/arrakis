@@ -10,22 +10,22 @@ import (
 	"github.com/lesomnus/arrakis/arks"
 )
 
-type TextPrinter struct {
-	io.Writer
+type TreePrinter struct {
+	w io.Writer
 
 	item_last arks.Item
 	// For each target.
 	items map[string][]arks.Item
 }
 
-func NewTextPrinter(w io.Writer) *TextPrinter {
-	return &TextPrinter{
-		Writer: w,
-		items:  map[string][]arks.Item{},
+func NewTreePrinter(w io.Writer) *TreePrinter {
+	return &TreePrinter{
+		w:     w,
+		items: map[string][]arks.Item{},
 	}
 }
 
-func (p *TextPrinter) Render(c arks.Config, v arks.Item) error {
+func (p *TreePrinter) Render(c arks.Config, v arks.Item) error {
 	if p.item_last.Version == v.Version {
 		p.items[v.Target] = append(p.items[v.Target], v)
 		return nil
@@ -38,14 +38,14 @@ func (p *TextPrinter) Render(c arks.Config, v arks.Item) error {
 	return nil
 }
 
-func (p *TextPrinter) Flush() error {
+func (p *TreePrinter) Flush() error {
 	items := p.items
 	p.items = map[string][]arks.Item{}
 	if p.item_last.Name == "" {
 		return nil
 	}
 
-	if _, err := fmt.Fprintf(p.Writer, "%s %s\n", p.item_last.Name, p.item_last.Version); err != nil {
+	if _, err := fmt.Fprintf(p.w, "%s %s\n", p.item_last.Name, p.item_last.Version); err != nil {
 		return err
 	}
 
@@ -60,16 +60,16 @@ func (p *TextPrinter) Flush() error {
 			return strings.Compare(a.Origin, b.Origin)
 		})
 
-		if _, err := fmt.Fprintf(p.Writer, "\t%s\n", target); err != nil {
+		if _, err := fmt.Fprintf(p.w, "\t%s\n", target); err != nil {
 			return err
 		}
 		for _, item := range vs {
-			if _, err := fmt.Fprintf(p.Writer, "\t\t%s\n", item.Origin); err != nil {
+			if _, err := fmt.Fprintf(p.w, "\t\t%s\n", item.Origin); err != nil {
 				return err
 			}
 		}
 	}
-	if _, err := fmt.Fprintf(p.Writer, "\n"); err != nil {
+	if _, err := fmt.Fprintf(p.w, "\n"); err != nil {
 		return err
 	}
 

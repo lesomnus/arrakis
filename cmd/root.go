@@ -16,7 +16,7 @@ func NewCmdRoot() *xli.Command {
 		},
 
 		Commands: xli.Commands{
-			NewCmdTree(),
+			NewCmdRender(),
 			NewCmdQuery(),
 		},
 		Handler: xli.Chain(

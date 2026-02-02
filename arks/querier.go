@@ -2,10 +2,10 @@ package arks
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io/fs"
 	"os"
+	"path/filepath"
 
 	"go.yaml.in/yaml/v4"
 )
@@ -52,14 +52,11 @@ func (q FsQuerier) Query(ctx context.Context, v Item) (string, error) {
 			continue
 		}
 
-		c_, err := q.readConfig(ctx, p_+"/config.yaml")
+		c_, err := ReadFromFile(q.FS, filepath.Join(p_, "config.yaml"))
 		if err != nil {
-			if errors.Is(err, os.ErrNotExist) {
-				continue
-			} else {
-				return "", err
-			}
+			return "", err
 		}
+
 		c = c.Merge(&c_)
 	}
 

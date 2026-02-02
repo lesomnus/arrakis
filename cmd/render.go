@@ -9,28 +9,40 @@ import (
 	"iter"
 	"maps"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
 	"github.com/lesomnus/arrakis/arks"
 	"github.com/lesomnus/arrakis/render"
 	"github.com/lesomnus/xli"
-	"github.com/lesomnus/xli/arg"
-	"go.yaml.in/yaml/v4"
+	"github.com/lesomnus/xli/flg"
 )
 
-func NewCmdTree() *xli.Command {
+func NewCmdRender() *xli.Command {
 	default_port := "./port"
+	default_renderer := "tree"
 	return &xli.Command{
-		Name: "tree",
+		Name: "render",
 
-		Args: arg.Args{
-			&arg.String{Name: "PORT", Optional: true, Value: &default_port},
+		Flags: flg.Flags{
+			&flg.String{Name: "port", Value: &default_port, Brief: "Path to the port directory"},
+			&flg.String{Name: "kind", Value: &default_renderer, Brief: "Output kind (tree, cfkv)"},
 		},
 
 		Handler: xli.OnRun(func(ctx context.Context, cmd *xli.Command, next xli.Next) error {
-			port_path := arg.MustGet[string](cmd, "PORT")
+			port_path := flg.MustGet[string](cmd, "port")
+			renderer_kind := flg.MustGet[string](cmd, "kind")
+
+			var r render.Renderer
+			switch renderer_kind {
+			case "tree":
+				r = render.NewTreePrinter(os.Stdout)
+			case "cfkv":
+				r = render.NewCloudFlareKvRenderer(os.Stdout)
+			default:
+				return fmt.Errorf("unknown renderer kind: %q", renderer_kind)
+			}
+
 			if info, err := os.Stat(port_path); err != nil {
 				return fmt.Errorf("access port path %q: %w", port_path, err)
 			} else if !info.IsDir() {
@@ -40,10 +52,8 @@ func NewCmdTree() *xli.Command {
 			port := os.DirFS(port_path).(fs.ReadDirFS)
 			walker := fsWalker{fs: port}
 
-			r := render.NewTextPrinter(cmd)
-			defer r.Flush()
-
 			c := arks.NewConfig()
+			defer r.Flush()
 			return walker.Walk(c, ".", r)
 		}),
 	}
@@ -54,10 +64,12 @@ type fsWalker struct {
 }
 
 func (w fsWalker) Walk(c arks.Config, p string, r render.Renderer) error {
-	c, err := w.readConfig(c, filepath.Join(p, "config.yaml"))
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
+	c_, err := arks.ReadFromFile(w.fs, filepath.Join(p, "config.yaml"))
+	if err != nil {
 		return err
 	}
+
+	c = c.Merge(&c_)
 	if err := w.visit(c, p, r); err != nil {
 		return err
 	}
@@ -72,13 +84,8 @@ func (w fsWalker) Walk(c arks.Config, p string, r render.Renderer) error {
 			continue
 		}
 
-		c_ := c.Clone()
-		c_.Path = path.Join(c_.Path, d.Name())
-		c_.Target.Path = path.Join(c_.Target.Path, d.Name())
-
-		p_next := filepath.Join(p, d.Name())
 		if len(c.Resolvers) == 0 {
-			if err := w.Walk(c_, p_next, r); err != nil {
+			if err := w.Walk(c, filepath.Join(p, d.Name()), r); err != nil {
 				fmt.Printf("err: %v\n", err)
 			}
 			continue
@@ -100,6 +107,9 @@ func (w fsWalker) visit(c arks.Config, p string, r render.Renderer) error {
 
 	for name, resolver := range c.Resolvers {
 		platforms := maps.Clone(c.Platforms)
+		if platforms == nil {
+			platforms = make(map[arks.Platform]arks.Platform)
+		}
 		maps.Copy(platforms, resolver.Platforms)
 
 		expanded := map[arks.Platform]arks.Platform{}
@@ -123,14 +133,7 @@ func (w fsWalker) visit(c arks.Config, p string, r render.Renderer) error {
 					return err
 				}
 
-				// target_p := c.Target.Path
-				// if c.Target.Suffix != "" {
-				// 	target_p = path.Join(target_p, c.Target.Suffix)
-				// }
-				// target_p = path.Join(target_p, buff.String())
-				// buff.Reset()
-
-				item.Origin = c.Path + "/" + version + "/" + string(source.Os()) + "/" + string(source.Arch())
+				item.Origin = c.Path + "/" + name + "@" + version + "/" + string(source.Os()) + "/" + string(source.Arch())
 				item.Target = c.Target.Path + c.Target.Suffix + target
 
 				if err := r.Render(c, item); err != nil {
@@ -141,21 +144,6 @@ func (w fsWalker) visit(c arks.Config, p string, r render.Renderer) error {
 	}
 
 	return nil
-}
-
-func (w fsWalker) readConfig(c arks.Config, p string) (arks.Config, error) {
-	c_ := c.Clone()
-	f, err := w.fs.Open(p)
-	if err != nil {
-		return c, fmt.Errorf("open config file %s: %w", p, err)
-	}
-	defer f.Close()
-
-	if err := yaml.NewDecoder(f).Decode(&c); err != nil {
-		return c, fmt.Errorf("decode config: %w", err)
-	}
-
-	return c_.Merge(&c), nil
 }
 
 func (w fsWalker) readVersions(p string) ([]string, error) {
