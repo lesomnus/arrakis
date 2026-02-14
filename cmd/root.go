@@ -18,6 +18,8 @@ func NewCmdRoot() *xli.Command {
 		Commands: xli.Commands{
 			NewCmdRender(),
 			NewCmdQuery(),
+			NewCmdCommit(),
+			NewCmdDiff(),
 		},
 		Handler: xli.Chain(
 			xli.RequireSubcommand(),

@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"io/fs"
 	"iter"
+	"maps"
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"strings"
 	"text/template"
 
@@ -95,8 +97,10 @@ func (c Config) Build(app App) (iter.Seq2[[]Item, error], error) {
 				return
 			}
 
+			targets := slices.Sorted(maps.Keys(ps))
 			buff := &strings.Builder{}
-			for target, requests := range ps {
+			for _, target := range targets {
+				requests := ps[target]
 				buff.Reset()
 
 				v.Platform = target
