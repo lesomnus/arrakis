@@ -1,2 +1,3 @@
+path: ".."
 target:
   suffix: /releases/download/

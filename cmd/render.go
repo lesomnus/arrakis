@@ -27,7 +27,8 @@ func NewCmdRender() *xli.Command {
 		Handler: xli.OnRun(func(ctx context.Context, cmd *xli.Command, next xli.Next) error {
 			port_path := flg.MustGet[string](cmd, "port")
 			renderer_kind := flg.MustGet[string](cmd, "kind")
-			with_diff := flg.MustGet[bool](cmd, "diff")
+			with_diff := false
+			flg.VisitP(cmd, "diff", &with_diff)
 
 			rc, ok := arks.Renders[renderer_kind]
 			if !ok {

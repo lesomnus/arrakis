@@ -37,7 +37,7 @@ func (w FsWalker) Step(c Config, p string, f FsWalkFunc) (Config, error) {
 	} else {
 		c_ := c
 		if app.Name == filepath.Base(p) {
-			c_.Path = filepath.Dir(p)
+			c_.Path = filepath.Dir(c.Path)
 		}
 
 		if err := f(c_, p, app); err != nil {

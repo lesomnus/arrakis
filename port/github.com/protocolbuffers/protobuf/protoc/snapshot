@@ -1,36 +1,48 @@
 
 github.com/protocolbuffers/protobuf/protoc/releases/download/v33.2/protoc-33.2-linux-aarch_64.zip
-github.com/protocolbuffers/protobuf/protoc@33.2/linux/aarch64
-github.com/protocolbuffers/protobuf/protoc@33.2/linux/arm64
+protocolbuffers/protobuf/protoc@33.2/linux/aarch64
+protocolbuffers/protobuf/protoc@33.2/linux/arm64
 
 github.com/protocolbuffers/protobuf/protoc/releases/download/v33.2/protoc-33.2-linux-x86_64.zip
-github.com/protocolbuffers/protobuf/protoc@33.2/linux/amd64
-github.com/protocolbuffers/protobuf/protoc@33.2/linux/x86_64
+protocolbuffers/protobuf/protoc@33.2/linux/amd64
+protocolbuffers/protobuf/protoc@33.2/linux/x86_64
 
 github.com/protocolbuffers/protobuf/protoc/releases/download/v33.2/protoc-33.2-win64.zip
-github.com/protocolbuffers/protobuf/protoc@33.2/windows/AMD64
+protocolbuffers/protobuf/protoc@33.2/windows/AMD64
 
 
 github.com/protocolbuffers/protobuf/protoc/releases/download/v33.3/protoc-33.3-linux-aarch_64.zip
-github.com/protocolbuffers/protobuf/protoc@33.3/linux/aarch64
-github.com/protocolbuffers/protobuf/protoc@33.3/linux/arm64
+protocolbuffers/protobuf/protoc@33.3/linux/aarch64
+protocolbuffers/protobuf/protoc@33.3/linux/arm64
 
 github.com/protocolbuffers/protobuf/protoc/releases/download/v33.3/protoc-33.3-linux-x86_64.zip
-github.com/protocolbuffers/protobuf/protoc@33.3/linux/amd64
-github.com/protocolbuffers/protobuf/protoc@33.3/linux/x86_64
+protocolbuffers/protobuf/protoc@33.3/linux/amd64
+protocolbuffers/protobuf/protoc@33.3/linux/x86_64
 
 github.com/protocolbuffers/protobuf/protoc/releases/download/v33.3/protoc-33.3-win64.zip
-github.com/protocolbuffers/protobuf/protoc@33.3/windows/AMD64
+protocolbuffers/protobuf/protoc@33.3/windows/AMD64
 
 
 github.com/protocolbuffers/protobuf/protoc/releases/download/v33.4/protoc-33.4-linux-aarch_64.zip
-github.com/protocolbuffers/protobuf/protoc@33.4/linux/aarch64
-github.com/protocolbuffers/protobuf/protoc@33.4/linux/arm64
+protocolbuffers/protobuf/protoc@33.4/linux/aarch64
+protocolbuffers/protobuf/protoc@33.4/linux/arm64
 
 github.com/protocolbuffers/protobuf/protoc/releases/download/v33.4/protoc-33.4-linux-x86_64.zip
-github.com/protocolbuffers/protobuf/protoc@33.4/linux/amd64
-github.com/protocolbuffers/protobuf/protoc@33.4/linux/x86_64
+protocolbuffers/protobuf/protoc@33.4/linux/amd64
+protocolbuffers/protobuf/protoc@33.4/linux/x86_64
 
 github.com/protocolbuffers/protobuf/protoc/releases/download/v33.4/protoc-33.4-win64.zip
-github.com/protocolbuffers/protobuf/protoc@33.4/windows/AMD64
+protocolbuffers/protobuf/protoc@33.4/windows/AMD64
+
+
+github.com/protocolbuffers/protobuf/protoc/releases/download/v33.5/protoc-33.5-linux-aarch_64.zip
+protocolbuffers/protobuf/protoc@33.5/linux/aarch64
+protocolbuffers/protobuf/protoc@33.5/linux/arm64
+
+github.com/protocolbuffers/protobuf/protoc/releases/download/v33.5/protoc-33.5-linux-x86_64.zip
+protocolbuffers/protobuf/protoc@33.5/linux/amd64
+protocolbuffers/protobuf/protoc@33.5/linux/x86_64
+
+github.com/protocolbuffers/protobuf/protoc/releases/download/v33.5/protoc-33.5-win64.zip
+protocolbuffers/protobuf/protoc@33.5/windows/AMD64
 

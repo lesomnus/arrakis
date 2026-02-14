@@ -31,9 +31,10 @@ func NewCmdTest() *xli.Command {
 			}
 
 			vs := map[[sha256.Size]byte]string{}
+			cnt := 0
 
 			c := arks.NewConfig()
-			return arks.FsWalker{Fs: port.FS().(fs.ReadDirFS)}.Walk(c, ".", func(c arks.Config, p string, app arks.App) error {
+			err = arks.FsWalker{Fs: port.FS().(fs.ReadDirFS)}.Walk(c, ".", func(c arks.Config, p string, app arks.App) error {
 				build, err := c.Build(app)
 				if err != nil {
 					return fmt.Errorf("prepare build for app: %w", err)
@@ -51,6 +52,7 @@ func NewCmdTest() *xli.Command {
 						if first, ok := vs[v]; ok {
 							cmd.Println(item.Origin)
 							cmd.Printf("\t%s\n\t%s\n", p, first)
+							cnt++
 							continue
 						}
 
@@ -60,6 +62,13 @@ func NewCmdTest() *xli.Command {
 
 				return nil
 			})
+			if err != nil {
+				return fmt.Errorf("walk port: %w", err)
+			}
+			if cnt > 0 {
+				return fmt.Errorf("%d conflicts found", cnt)
+			}
+			return next(ctx)
 		}),
 	}
 }

@@ -7,16 +7,29 @@ set -o pipefail
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" # Directory where this script exists.
 __root="$(cd "$(dirname "${__dir}")" && pwd)"         # Root directory of project.
 
-if [ "$1" = "remote" ]; then
+if [ "$1" = "remote" ] || [ "$1" = "--remote" ]; then
   mode="remote"
 else
   mode="local"
 fi
 
+function _ARKS {
+  go run . ${@}
+}
+
 cd "${__root}"
+_ARKS test
+_ARKS diff --kind cfkv > cf-worker/data.jsonl
 
-go run . render --kind cfkv > cf-worker/data.jsonl
-
-cd cf-worker
+cd "${__root}/cf-worker"
+if [ "$(stat -c %s data.jsonl)" -lt 14 ]; then
+  echo "No changes to sync."
+  exit 0
+fi
 
 npx wrangler kv bulk put --binding=KV --${mode} ./data.jsonl
+
+if [ "$mode" = "remote" ]; then
+  cd "${__root}"
+  _ARKS commit
+fi

@@ -1,7 +1,6 @@
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
-		console.log(request.url)
-		const k = new URL(request.url).pathname
+		const k = new URL(request.url).pathname.slice(1)
 		const v = await env.KV.get(k)
 		if (v === null) {
 			return new Response('Not Found', { status: 404 });

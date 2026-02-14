@@ -7,7 +7,6 @@ import (
 	"iter"
 	"maps"
 	"os"
-	"path"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -56,21 +55,25 @@ func (c Config) Merge(other *Config) Config {
 		return c
 	}
 
-	if strings.HasPrefix(other.Path, ".") {
-		c.Path = path.Join(c.Path, other.Path)
-	} else {
-		c.Path = other.Path
-	}
-	if strings.HasPrefix(other.Target.Path, ".") {
-		c.Target.Path = path.Join(c.Target.Path, other.Target.Path)
-	} else {
-		c.Target.Path = other.Target.Path
-	}
+	c.Path = c.mergePath(c.Path, other.Path)
+	c.Target.Path = c.mergePath(c.Target.Path, other.Target.Path)
 	if other.Target.Suffix != "" {
 		c.Target.Suffix = other.Target.Suffix
 	}
 
 	return c
+}
+
+func (Config) mergePath(a, b string) string {
+	if strings.HasPrefix(b, ".") {
+		a = filepath.Join(a, b)
+		if a == ".." {
+			a = ""
+		}
+
+		return a
+	}
+	return b
 }
 
 func (c Config) Build(app App) (iter.Seq2[[]Item, error], error) {
