@@ -28,16 +28,17 @@ func (w FsWalker) Step(c Config, p string, f FsWalkFunc) (Config, error) {
 		return Config{}, fmt.Errorf("read config: %w", err)
 	}
 
-	c = c.Merge(&c_)
+	c_next := c.Merge(&c_)
 
 	if app, err := ReadAppFromFs(w.Fs, p); err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
 			return Config{}, fmt.Errorf("read app: %w", err)
 		}
 	} else {
-		c_ := c
+		c_ := c_next
 		if app.Name == filepath.Base(p) {
-			c_.Path = filepath.Dir(c.Path)
+			c_.Path = c.Path
+			c_.Target.Path = c.Target.Path
 		}
 
 		if err := f(c_, p, app); err != nil {
@@ -45,7 +46,7 @@ func (w FsWalker) Step(c Config, p string, f FsWalkFunc) (Config, error) {
 		}
 	}
 
-	return c, nil
+	return c_next, nil
 }
 
 func (w FsWalker) Walk(c Config, p string, f FsWalkFunc) error {
