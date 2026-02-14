@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  release:
+    types: [released]
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build:
+    name: Build and Upload
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Generate version file
+        env:
+          BUILD_VERSION: ${{ github.event.release.tag_name }}
+          BUILD_ID: ${{ github.run_id }}
+          BUILD_HASH: ${{ github.sha }}
+        run: |
+          ./scripts/gen-version-file.sh
+
+      - name: Build for multiple platforms
+        run: |
+          export CGO_ENABLED=0
+          export GOOS=linux
+          GOARCH=amd64 go build -v -o arks-linux-amd64 main.go
+          GOARCH=arm64 go build -v -o arks-linux-arm64 main.go
+
+      - name: Upload binaries to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload ${{ github.event.release.tag_name }} \
+            arks-linux-amd64 \
+            arks-linux-arm64

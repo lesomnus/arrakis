@@ -9,13 +9,14 @@ import (
 
 func NewCmdRoot() *xli.Command {
 	return &xli.Command{
-		Name: "arrkis",
+		Name: "arks",
 
 		Flags: flg.Flags{
 			&flg.String{Name: "port"},
 		},
 
 		Commands: xli.Commands{
+			NewCmdVersion(),
 			NewCmdRender(),
 			NewCmdQuery(),
 			NewCmdCommit(),
