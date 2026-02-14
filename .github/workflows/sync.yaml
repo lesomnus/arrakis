@@ -1,0 +1,71 @@
+name: Sync
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - port/**
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Get arks
+        run: |
+          curl -o _arks -sSL https://pkg.opt.td/lesomnus/arrakis/arks@0.0.1/linux/$(uname -m)
+          chmod +x _arks
+          ./_arks version
+
+      - name: Diff
+        id: diff
+        run: |
+          ./_arks test
+          ./_arks diff --kind cfkv > ./cf-worker/data.jsonl
+
+          cd ./cf-worker
+          if [ "$(stat -c %s data.jsonl)" -lt 14 ]; then
+            echo "No changes to sync."
+            echo "need_sync=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "need_sync=true" >> $GITHUB_OUTPUT
+
+      - uses: actions/setup-node@v6
+        if: steps.diff.outputs.need_sync == 'true'
+        with:
+          node-version: 24
+          cache: "npm"
+          cache-dependency-path: cf-worker/package-lock.json
+
+      - name: Update
+        if: steps.diff.outputs.need_sync == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          cd ./cf-worker
+          npm -D install wrangler
+          npx wrangler kv bulk put --binding=KV --remote ./data.jsonl
+
+      - name: Commit and push changes
+        if: steps.diff.outputs.need_sync == 'true'
+        run: |
+          ./_arks commit
+
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          if [[ -n $(git status --porcelain) ]]; then
+            git add .
+            git commit -m "Auto-sync changes"
+            git push
+          else
+            echo "No changes to commit"
+            exit 1
+          fi

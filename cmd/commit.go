@@ -68,7 +68,6 @@ func NewCmdCommit() *xli.Command {
 					fmt.Fprintf(f, "\n")
 				}
 
-				fmt.Println(p)
 				return nil
 			})
 		}),

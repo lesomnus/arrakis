@@ -82,6 +82,11 @@ func NewTreePrinter(w io.Writer) *TreePrinter {
 }
 
 func (p *TreePrinter) Render(c Config, v Item) error {
+	if p.item_last.Name == "" {
+		p.item_last = v
+		p.items[v.Target] = append(p.items[v.Target], v)
+		return nil
+	}
 	if p.item_last.Version == v.Version {
 		p.items[v.Target] = append(p.items[v.Target], v)
 		return nil

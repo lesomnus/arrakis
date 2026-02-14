@@ -1,0 +1,4 @@
+path: v{{.Version}}/arks-{{.Os}}-{{.Arch}}
+platforms:
+  linux/_amd64/: linux/amd64/
+  linux/_arm64/: linux/arm64/

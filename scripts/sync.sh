@@ -19,7 +19,7 @@ function _ARKS {
 
 cd "${__root}"
 _ARKS test
-_ARKS diff --kind cfkv > cf-worker/data.jsonl
+_ARKS diff --kind cfkv > ./cf-worker/data.jsonl
 
 cd "${__root}/cf-worker"
 if [ "$(stat -c %s data.jsonl)" -lt 14 ]; then
