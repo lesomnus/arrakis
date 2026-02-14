@@ -3,11 +3,9 @@ package arks
 import (
 	"context"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
-	"path/filepath"
-
-	"go.yaml.in/yaml/v4"
 )
 
 type Querier interface {
@@ -42,7 +40,11 @@ func (q FsQuerier) Query(ctx context.Context, v Item) (string, error) {
 		return "", os.ErrNotExist
 	}
 
+	app := App{}
+	found := false
+
 	c := NewConfig()
+	walker := FsWalker{Fs: q.FS.(fs.ReadDirFS)}
 	for i, r := range p {
 		p_ := p[:i]
 		if i == len(p)-1 && r != '/' {
@@ -52,44 +54,43 @@ func (q FsQuerier) Query(ctx context.Context, v Item) (string, error) {
 			continue
 		}
 
-		c_, err := ReadFromFile(q.FS, filepath.Join(p_, "config.yaml"))
+		c, err = walker.Step(c, p_, func(c Config, p string, a App) error {
+			app = a
+			found = true
+			return nil
+		})
 		if err != nil {
 			return "", err
 		}
-
-		c = c.Merge(&c_)
 	}
 
-	resolver, ok := c.Resolvers[v.Name]
+	if !found {
+		return "", io.EOF
+	}
+
+	platform, ok := app.Platforms.Resolve(v.Platform)
 	if !ok {
 		return "", os.ErrNotExist
 	}
 
-	platform, ok := resolver.Resolve(v.Platform)
-	if !ok {
-		return "", os.ErrNotExist
-	}
+	app.Versions = []string{v.Version}
+	app.Platforms = PlatformMap{platform: platform}
 
-	v.Platform = platform
-	target, err := resolver.Build(v)
+	build, err := c.Build(app)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("prepare build for app: %w", err)
 	}
 
-	return target, nil
-}
+	for items, err := range build {
+		if err != nil {
+			return "", fmt.Errorf("build app: %w", err)
+		}
+		if len(items) == 0 {
+			return "", os.ErrNotExist
+		}
 
-func (q FsQuerier) readConfig(ctx context.Context, p string) (Config, error) {
-	f, err := q.Open(p)
-	if err != nil {
-		return Config{}, fmt.Errorf("open config file %s: %w", p, err)
-	}
-	defer f.Close()
-
-	c := NewConfig()
-	if err := yaml.NewDecoder(f).Decode(&c); err != nil {
-		return Config{}, fmt.Errorf("decode config: %w", err)
+		return items[0].Target, nil
 	}
 
-	return c, nil
+	return "", os.ErrNotExist
 }

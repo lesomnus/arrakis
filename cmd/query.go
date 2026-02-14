@@ -20,9 +20,8 @@ func NewCmdQuery() *xli.Command {
 		Handler: xli.OnRun(func(ctx context.Context, cmd *xli.Command, next xli.Next) error {
 			port := os.DirFS("./port")
 			item := arks.Item{
-				Path:     "github.com/protocolbuffers/protobuf",
-				Name:     "protoc",
-				Version:  "1.0.0",
+				Path:     "github.com/protocolbuffers/protobuf/protoc",
+				Version:  "33.4",
 				Platform: arks.Platform("linux/arm64/"),
 			}
 

@@ -2,6 +2,7 @@ package arks_test
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 
 	"github.com/lesomnus/arrakis/arks"
@@ -75,6 +76,69 @@ func TestPlatform(t *testing.T) {
 				x := require.New(t)
 				p := arks.Platform(test[0]).Normalized()
 				x.Equal(arks.Platform(test[1]), p)
+			})
+		}
+	})
+	t.Run("Expand", func(t *testing.T) {
+		tests := [][]arks.Platform{
+			{"linux/_/",
+				"linux/x86/",
+				"linux/x86_64/",
+				"linux/aarch32/",
+				"linux/aarch64/",
+				"linux/amd64/",
+				"linux/arm64/",
+			},
+			{"linux/_32/",
+				"linux/x86/",
+				"linux/aarch32/",
+			},
+			{"linux/_64/",
+				"linux/x86_64/",
+				"linux/aarch64/",
+				"linux/amd64/",
+				"linux/arm64/",
+			},
+			{"linux/_amd64/",
+				"linux/x86_64/",
+				"linux/amd64/",
+			},
+			{"linux/_arm64/",
+				"linux/aarch64/",
+				"linux/arm64/",
+			},
+
+			{"windows/_/",
+				"windows/AMD64/",
+				"windows/x86/",
+				"windows/ARM64/",
+				"windows/ARM/",
+			},
+			{"windows/_32/",
+				"windows/x86/",
+				"windows/ARM/",
+			},
+			{"windows/_64/",
+				"windows/AMD64/",
+				"windows/ARM64/",
+			},
+			{"windows/_amd64/",
+				"windows/AMD64/",
+			},
+			{"windows/_arm64/",
+				"windows/ARM64/",
+			},
+
+			{"darwin/_/",
+				"darwin/x86_64/",
+				"darwin/arm64/",
+			},
+		}
+		for _, test := range tests {
+			t.Run(fmt.Sprintf("Platform(%q).Expand", test[0]), func(t *testing.T) {
+				x := require.New(t)
+				vs := slices.Collect(test[0].Expand())
+				x.Equal(test[1:], vs)
 			})
 		}
 	})

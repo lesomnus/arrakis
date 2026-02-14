@@ -1,6 +1,10 @@
 package arks
 
-import "strings"
+import (
+	"iter"
+	"slices"
+	"strings"
+)
 
 type Os string
 type Arch string
@@ -30,10 +34,6 @@ const (
 )
 
 type Platform string
-
-func (p Platform) String() string {
-	return string(p)
-}
 
 func (p Platform) Split() (os Os, arch Arch, variant Variant) {
 	es := strings.SplitN(string(p), "/", 3)
@@ -94,6 +94,217 @@ func (p Platform) Normalized() Platform {
 	}
 
 	return Platform(p_)
+}
+
+func (p Platform) Expand() iter.Seq[Platform] {
+	os, arch, variant := p.Normalized().Split()
+	if os == "" || arch == "" {
+		return func(yield func(Platform) bool) {}
+	}
+	if !strings.HasPrefix(string(p), "_") && !strings.Contains(string(p), "/_") {
+		// Seems that there is no wildcard. No need to expand.
+		return func(yield func(Platform) bool) {
+			yield(p)
+		}
+	}
+
+	return func(yield func(Platform) bool) {
+		oses := []Os{}
+		switch os {
+		case "_":
+			oses = []Os{
+				OsLinux,
+				OsWindows,
+				OsDarwin,
+			}
+		default:
+			oses = []Os{Os(os)}
+		}
+
+		archs := []Arch{}
+		for _, os := range oses {
+			switch os {
+			case OsLinux:
+				switch arch {
+				case "_":
+					archs = []Arch{
+						"x86",
+						"x86_64",
+						"aarch32",
+						"aarch64",
+						"amd64",
+						"arm64",
+					}
+
+				case "_32":
+					archs = []Arch{
+						"x86",
+						"aarch32",
+					}
+
+				case "_64":
+					archs = []Arch{
+						"x86_64",
+						"aarch64",
+						"amd64",
+						"arm64",
+					}
+
+				case "_arm64":
+					archs = []Arch{
+						"aarch64",
+						"arm64",
+					}
+
+				case "_amd64":
+					archs = []Arch{
+						"x86_64",
+						"amd64",
+					}
+				}
+
+			case OsWindows:
+				switch arch {
+				case "_":
+					archs = []Arch{
+						"AMD64",
+						"x86",
+						"ARM64",
+						"ARM",
+					}
+
+				case "_32":
+					archs = []Arch{
+						"x86",
+						"ARM",
+					}
+
+				case "_64":
+					archs = []Arch{
+						"AMD64",
+						"ARM64",
+					}
+
+				case "_arm64":
+					archs = []Arch{
+						"ARM64",
+					}
+
+				case "_amd64":
+					archs = []Arch{
+						"AMD64",
+					}
+				}
+
+			case OsDarwin:
+				switch arch {
+				case "_":
+					archs = []Arch{
+						"x86_64",
+						"arm64",
+					}
+				}
+			}
+		}
+
+		for _, arch := range archs {
+			if !yield(Platform(string(os) + "/" + string(arch) + "/" + string(variant))) {
+				return
+			}
+		}
+	}
+}
+
+type PlatformMap map[Platform]Platform
+
+func (m PlatformMap) Expand() map[Platform][]Platform {
+	m_ := make(map[Platform][]Platform)
+	for pattern, v := range m {
+		m_[v] = slices.Collect(pattern.Expand())
+	}
+
+	return m_
+}
+
+func (m PlatformMap) Resolve(p Platform) (Platform, bool) {
+	var (
+		match Platform
+		score = 0
+	)
+
+	os, arch, _ := p.Normalized().Split()
+	if os == "" || arch == "" {
+		return "", false
+	}
+
+	for k, v := range m {
+		score_ := 0
+		os_, arch_, _ := k.Split()
+		if os_ == "" {
+			continue
+		}
+		if arch_ == "" {
+			continue
+		}
+
+		switch os_ {
+		case "_":
+			score_ += 1
+		case os:
+			score_ += 8
+		}
+
+		switch arch_ {
+		case "_":
+			score_ += 1
+		case "_amd":
+			if arch.IsAmd() {
+				score_ += 2
+			}
+		case "_arm":
+			if arch.IsArm() {
+				score_ += 2
+			}
+		case "_32":
+			if arch.Is32() {
+				score_ += 2
+			}
+		case "_64":
+			if !arch.Is64() {
+				score_ += 2
+			}
+		case "_amd32":
+			if arch.IsAmd32() {
+				score_ += 4
+			}
+		case "_arm32":
+			if arch.IsArm32() {
+				score_ += 4
+			}
+		case "_amd64":
+			if arch.IsAmd64() {
+				score_ += 4
+			}
+		case "_arm64":
+			if arch.IsArm64() {
+				score_ += 4
+			}
+		case arch:
+			score_ += 8
+		}
+
+		if score_ < score {
+			continue
+		}
+
+		match = v
+		score = score_
+	}
+	if score < 0 {
+		return "", false
+	}
+
+	return match, true
 }
 
 func (a Arch) Is32() bool {
