@@ -114,14 +114,16 @@ func (c Config) Build(app App) (iter.Seq2[[]Item, error], error) {
 				}
 				v.Target = c.Target.Path + c.Target.Suffix + buff.String()
 
-				vs := make([]Item, 0, len(requests))
-				for _, request := range requests {
-					v.Origin = c.Path + "/" + app.Name + "@" + version + "/" + string(request.Os()) + "/" + string(request.Arch())
-					vs = append(vs, v)
-				}
+				for version := range version.Values() {
+					vs := make([]Item, 0, len(requests))
+					for _, request := range requests {
+						v.Origin = c.Path + "/" + app.Name + "@" + version + "/" + string(request.Os()) + "/" + string(request.Arch())
+						vs = append(vs, v)
+					}
 
-				if !yield(vs, nil) {
-					return
+					if !yield(vs, nil) {
+						return
+					}
 				}
 			}
 		}

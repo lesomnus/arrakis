@@ -44,7 +44,8 @@ func NewCmdCommit() *xli.Command {
 				}
 				defer f.Close()
 
-				version := ""
+				version := arks.Version("")
+				target := ""
 				for items, err := range build {
 					if err != nil {
 						return fmt.Errorf("build app: %w", err)
@@ -61,11 +62,13 @@ func NewCmdCommit() *xli.Command {
 						return strings.Compare(a.Origin, b.Origin)
 					})
 
-					fmt.Fprintf(f, "%s\n", items[0].Target)
+					if target != items[0].Target {
+						fmt.Fprintf(f, "\n%s\n", items[0].Target)
+						target = items[0].Target
+					}
 					for _, item := range items {
 						fmt.Fprintf(f, "%s\n", item.Origin)
 					}
-					fmt.Fprintf(f, "\n")
 				}
 
 				return nil

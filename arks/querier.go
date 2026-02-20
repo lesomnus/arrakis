@@ -73,7 +73,7 @@ func (q FsQuerier) Query(ctx context.Context, v Item) (string, error) {
 		return "", os.ErrNotExist
 	}
 
-	app.Versions = []string{v.Version}
+	app.Versions = []Version{v.Version}
 	app.Platforms = PlatformMap{platform: platform}
 
 	build, err := c.Build(app)

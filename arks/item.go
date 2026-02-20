@@ -8,7 +8,7 @@ import (
 type Item struct {
 	Path    string
 	Name    string
-	Version string
+	Version Version
 	Platform
 
 	Origin string
@@ -47,7 +47,7 @@ func ParseItem(s string) (Item, error) {
 	return Item{
 		Path:     path,
 		Name:     name,
-		Version:  version,
+		Version:  Version(version),
 		Platform: platform,
 	}, nil
 }

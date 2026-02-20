@@ -1,9 +1,9 @@
 package arks
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
-	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -18,7 +18,7 @@ type App struct {
 	Path string
 
 	Platforms PlatformMap
-	Versions  []string
+	Versions  []Version
 }
 
 var templateFuncs = template.FuncMap{
@@ -53,21 +53,19 @@ func ReadAppFromFs(fs fs.FS, p string) (App, error) {
 		}
 	} else {
 		defer f.Close()
-		vs := []string{}
-		data, err := io.ReadAll(f)
-		if err != nil {
-			return App{}, fmt.Errorf("read versions file: %w", err)
-		}
+		vs := []Version{}
 
-		for l := range strings.SplitSeq(string(data), "\n") {
-			l = strings.TrimSpace(l)
+		s := bufio.NewScanner(f)
+		for s.Scan() {
+			l := strings.TrimSpace(s.Text())
 			if l == "" {
 				continue
 			}
 			if l[0] == '#' {
 				continue
 			}
-			vs = append(vs, l)
+
+			vs = append(vs, Version(l))
 		}
 
 		app.Versions = vs

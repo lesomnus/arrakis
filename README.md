@@ -1,7 +1,28 @@
 # arrkis
 
-Taking you to right place where the thing you are looking for is located.
+The artifacts must flow.
 
 ```sh
-curl -LO https://pkg.opt.td/protocolbuffers/protobuf/protoc@3.33/linux/$(uname -m)
+$ curl -v https://pkg.opt.td/lesomnus/arrakis/arks@0.0.1/linux/$(uname -m)
+> GET /lesomnus/arrakis/arks@0.0.1/linux/x86_64 HTTP/2
+< HTTP/2 301
+< location: https://github.com/lesomnus/arrakis/releases/download/v0.0.1/arks-linux-amd64
+```
+
+
+## Usage
+
+### Linux
+```sh
+curl -LO https://pkg.opt.td/lesomnus/arrakis/arks@0.0.1/linux/$(uname -m)
+```
+
+### Windows
+```sh
+curl -LO "https://pkg.opt.td/lesomnus/arrakis/arks@0.0.1/windows/${env:PROCESSOR_ARCHITECTURE}"
+```
+
+### Dockerfile
+```Dockerfile
+RUN curl -LO https://pkg.opt.td/lesomnus/arrakis/arks@0.0.1/linux/${TARGETARCH}
 ```

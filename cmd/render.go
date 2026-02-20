@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"github.com/lesomnus/arrakis/arks"
 	"github.com/lesomnus/xli"
@@ -78,11 +79,12 @@ func NewCmdRender() *xli.Command {
 					if len(items) == 0 {
 						continue
 					}
-					if _, ok := snapshot[items[0].Target]; ok {
-						continue
-					}
 
+					entry := snapshot[items[0].Target]
 					for _, item := range items {
+						if slices.Contains(entry, item.Origin) {
+							continue
+						}
 						r.Render(c, item)
 					}
 				}

@@ -19,7 +19,7 @@ jobs:
 
       - name: Get arks
         run: |
-          curl -o _arks -sSL https://pkg.opt.td/lesomnus/arrakis/arks@0.0.1/linux/$(uname -m)
+          curl -o _arks -sSL https://pkg.opt.td/lesomnus/arrakis/arks@latest/linux/$(uname -m)
           chmod +x _arks
           ./_arks version
 
@@ -27,7 +27,7 @@ jobs:
         id: diff
         run: |
           ./_arks test
-          ./_arks diff --kind cfkv > ./cf-worker/data.jsonl
+          ./_arks diff --kind cfkv | tee ./cf-worker/data.jsonl
 
           cd ./cf-worker
           if [ "$(stat -c %s data.jsonl)" -lt 14 ]; then
