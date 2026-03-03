@@ -12,11 +12,20 @@ lesomnus/arrakis/arks@0.0.1/linux/arm64
 github.com/lesomnus/arrakis/releases/download/v0.0.2/arks-linux-amd64
 lesomnus/arrakis/arks@0.0.2/linux/amd64
 lesomnus/arrakis/arks@0.0.2/linux/x86_64
-lesomnus/arrakis/arks@latest/linux/amd64
-lesomnus/arrakis/arks@latest/linux/x86_64
 
 github.com/lesomnus/arrakis/releases/download/v0.0.2/arks-linux-arm64
 lesomnus/arrakis/arks@0.0.2/linux/aarch64
 lesomnus/arrakis/arks@0.0.2/linux/arm64
+
+
+github.com/lesomnus/arrakis/releases/download/v0.0.3/arks-linux-amd64
+lesomnus/arrakis/arks@0.0.3/linux/amd64
+lesomnus/arrakis/arks@0.0.3/linux/x86_64
+lesomnus/arrakis/arks@latest/linux/amd64
+lesomnus/arrakis/arks@latest/linux/x86_64
+
+github.com/lesomnus/arrakis/releases/download/v0.0.3/arks-linux-arm64
+lesomnus/arrakis/arks@0.0.3/linux/aarch64
+lesomnus/arrakis/arks@0.0.3/linux/arm64
 lesomnus/arrakis/arks@latest/linux/aarch64
 lesomnus/arrakis/arks@latest/linux/arm64
