@@ -48,5 +48,10 @@ func ReadSnapshot(f io.Reader) (Snapshot, error) {
 		}
 	}
 
+	// In the case of EOF without newline, we need to save the last target and origins.
+	if len(origins) > 0 {
+		vs[target] = origins
+	}
+
 	return vs, scanner.Err()
 }

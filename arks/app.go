@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -31,25 +32,38 @@ var templateFuncs = template.FuncMap{
 	},
 }
 
-func ReadAppFromFs(fs fs.FS, p string) (App, error) {
+func ReadAppFromFs(fs fs.FS, p string) ([]App, error) {
 	f, err := fs.Open(filepath.Join(p, "app.yaml"))
 	if err != nil {
-		return App{}, err
+		return nil, err
 	}
 	defer f.Close()
 
-	app := App{}
-	if err := yaml.NewDecoder(f).Decode(&app); err != nil {
-		return app, fmt.Errorf("decode app: %w", err)
+	loader, err := yaml.NewLoader(f)
+	if err != nil {
+		return nil, fmt.Errorf("create yaml loader: %w", err)
 	}
-	if app.Name == "" {
-		app.Name = filepath.Base(p)
+
+	apps := []App{}
+	for {
+		var app App
+		if err := loader.Load(&app); err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			return nil, fmt.Errorf("decode app: %w", err)
+		}
+		if app.Name == "" {
+			app.Name = filepath.Base(p)
+		}
+
+		apps = append(apps, app)
 	}
 
 	f, err = fs.Open(filepath.Join(p, "versions"))
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
-			return App{}, fmt.Errorf("open versions file: %w", err)
+			return nil, fmt.Errorf("open versions file: %w", err)
 		}
 	} else {
 		defer f.Close()
@@ -68,10 +82,12 @@ func ReadAppFromFs(fs fs.FS, p string) (App, error) {
 			vs = append(vs, Version(l))
 		}
 
-		app.Versions = vs
+		for i := range apps {
+			apps[i].Versions = vs
+		}
 	}
 
-	return app, nil
+	return apps, nil
 }
 
 func (r App) Build(v Item) (string, error) {

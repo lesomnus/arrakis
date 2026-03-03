@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -32,17 +33,29 @@ func NewCmdCommit() *xli.Command {
 				return fmt.Errorf("open port: %w", err)
 			}
 
+			var (
+				p_last string
+				f_last io.WriteCloser = nopWriteCloser{}
+			)
+			defer func() {
+				f_last.Close()
+			}()
 			return arks.FsWalker{Fs: port.FS().(fs.ReadDirFS)}.Walk(c, ".", func(c arks.Config, p string, app arks.App) error {
 				build, err := c.Build(app)
 				if err != nil {
 					return fmt.Errorf("prepare build for app: %w", err)
 				}
 
-				f, err := port.OpenFile(filepath.Join(p, "snapshot"), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-				if err != nil {
-					return fmt.Errorf("open snapshot file for write: %w", err)
+				if p_last != p {
+					f_last.Close()
+					p_last = p
+
+					f_last, err = port.OpenFile(filepath.Join(p, "snapshot"), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+					if err != nil {
+						return fmt.Errorf("open snapshot file for write: %w", err)
+					}
 				}
-				defer f.Close()
+				f := f_last
 
 				version := arks.Version("")
 				target := ""
@@ -76,3 +89,8 @@ func NewCmdCommit() *xli.Command {
 		}),
 	}
 }
+
+type nopWriteCloser struct{}
+
+func (nopWriteCloser) Write(p []byte) (n int, err error) { return len(p), nil }
+func (nopWriteCloser) Close() error                      { return nil }

@@ -124,7 +124,7 @@ func (p Platform) Expand() iter.Seq[Platform] {
 		archs := []Arch{}
 		for _, os := range oses {
 			switch os {
-			case OsLinux:
+			case OsLinux, OsDarwin:
 				switch arch {
 				case "_":
 					archs = []Arch{
@@ -193,15 +193,6 @@ func (p Platform) Expand() iter.Seq[Platform] {
 				case "_amd64":
 					archs = []Arch{
 						"AMD64",
-					}
-				}
-
-			case OsDarwin:
-				switch arch {
-				case "_":
-					archs = []Arch{
-						"x86_64",
-						"arm64",
 					}
 				}
 			}

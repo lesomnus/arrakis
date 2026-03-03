@@ -30,19 +30,21 @@ func (w FsWalker) Step(c Config, p string, f FsWalkFunc) (Config, error) {
 
 	c_next := c.Merge(&c_)
 
-	if app, err := ReadAppFromFs(w.Fs, p); err != nil {
+	if apps, err := ReadAppFromFs(w.Fs, p); err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
 			return Config{}, fmt.Errorf("read app: %w", err)
 		}
 	} else {
-		c_ := c_next
-		if app.Name == filepath.Base(p) {
-			c_.Path = c.Path
-			c_.Target.Path = c.Target.Path
-		}
+		for _, app := range apps {
+			c_ := c_next
+			if app.Name == filepath.Base(p) {
+				c_.Path = c.Path
+				c_.Target.Path = c.Target.Path
+			}
 
-		if err := f(c_, p, app); err != nil {
-			return Config{}, fmt.Errorf("visit app: %w", err)
+			if err := f(c_, p, app); err != nil {
+				return Config{}, fmt.Errorf("visit app: %w", err)
+			}
 		}
 	}
 

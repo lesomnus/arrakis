@@ -59,12 +59,10 @@ func NewCmdRender() *xli.Command {
 						}
 					} else {
 						defer f.Close()
-						v, err := ReadSnapshot(f)
+						snapshot, err = ReadSnapshot(f)
 						if err != nil {
 							return fmt.Errorf("read snapshot: %w", err)
 						}
-
-						snapshot = v
 					}
 				}
 
