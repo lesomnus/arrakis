@@ -1,5 +1,21 @@
 
 
+github.com/bufbuild/buf/releases/download/v1.66.0/buf-Darwin-arm64
+bufbuild/buf/buf@1.66.0/darwin/aarch64
+bufbuild/buf/buf@1.66.0/darwin/arm64
+bufbuild/buf/buf@1.66/darwin/aarch64
+bufbuild/buf/buf@1.66/darwin/arm64
+bufbuild/buf/buf@latest/darwin/aarch64
+bufbuild/buf/buf@latest/darwin/arm64
+
+github.com/bufbuild/buf/releases/download/v1.66.0/buf-Darwin-x86_64
+bufbuild/buf/buf@1.66.0/darwin/amd64
+bufbuild/buf/buf@1.66.0/darwin/x86_64
+bufbuild/buf/buf@1.66/darwin/amd64
+bufbuild/buf/buf@1.66/darwin/x86_64
+bufbuild/buf/buf@latest/darwin/amd64
+bufbuild/buf/buf@latest/darwin/x86_64
+
 github.com/bufbuild/buf/releases/download/v1.66.0/buf-Linux-aarch64
 bufbuild/buf/buf@1.66.0/linux/aarch64
 bufbuild/buf/buf@1.66.0/linux/arm64
