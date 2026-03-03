@@ -1,0 +1,8 @@
+path: v{{.Version}}/buf-{{.Os}}-{{.Arch}}
+platforms:
+  linux/_amd64/: Linux/x86_64/
+  linux/_arm64/: Linux/aarch64/
+  windows/_amd64/: Windows/x86_64/
+  windows/_arm64/: Windows/arm64/
+  darwin/_amd64/: Darwin/x86_64/
+  darwin/_arm64/: Darwin/arm64/
