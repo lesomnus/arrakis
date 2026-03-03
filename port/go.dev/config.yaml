@@ -1,0 +1,3 @@
+path: golang
+target:
+  suffix: /dl/
