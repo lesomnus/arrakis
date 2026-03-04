@@ -1,0 +1,3 @@
+path: ./github.com
+target:
+  suffix: /cli/releases/download/
