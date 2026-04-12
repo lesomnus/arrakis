@@ -8,3 +8,4 @@ platforms:
 path: go{{.Version}}.{{.Os}}-{{.Arch}}.zip
 platforms:
   windows/_amd64/: windows/amd64/
+  windows/_arm64/: windows/arm64/
