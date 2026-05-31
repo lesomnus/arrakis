@@ -37,30 +37,47 @@ golang/go@1.26.1/linux/arm64
 go.dev/dl/go1.26.2.darwin-amd64.tar.gz
 golang/go@1.26.2/darwin/amd64
 golang/go@1.26.2/darwin/x86_64
+
+go.dev/dl/go1.26.2.darwin-arm64.tar.gz
+golang/go@1.26.2/darwin/aarch64
+golang/go@1.26.2/darwin/arm64
+
+go.dev/dl/go1.26.2.linux-amd64.tar.gz
+golang/go@1.26.2/linux/amd64
+golang/go@1.26.2/linux/x86_64
+
+go.dev/dl/go1.26.2.linux-arm64.tar.gz
+golang/go@1.26.2/linux/aarch64
+golang/go@1.26.2/linux/arm64
+
+
+go.dev/dl/go1.26.3.darwin-amd64.tar.gz
+golang/go@1.26.3/darwin/amd64
+golang/go@1.26.3/darwin/x86_64
 golang/go@1.26/darwin/amd64
 golang/go@1.26/darwin/x86_64
 golang/go@latest/darwin/amd64
 golang/go@latest/darwin/x86_64
 
-go.dev/dl/go1.26.2.darwin-arm64.tar.gz
-golang/go@1.26.2/darwin/aarch64
-golang/go@1.26.2/darwin/arm64
+go.dev/dl/go1.26.3.darwin-arm64.tar.gz
+golang/go@1.26.3/darwin/aarch64
+golang/go@1.26.3/darwin/arm64
 golang/go@1.26/darwin/aarch64
 golang/go@1.26/darwin/arm64
 golang/go@latest/darwin/aarch64
 golang/go@latest/darwin/arm64
 
-go.dev/dl/go1.26.2.linux-amd64.tar.gz
-golang/go@1.26.2/linux/amd64
-golang/go@1.26.2/linux/x86_64
+go.dev/dl/go1.26.3.linux-amd64.tar.gz
+golang/go@1.26.3/linux/amd64
+golang/go@1.26.3/linux/x86_64
 golang/go@1.26/linux/amd64
 golang/go@1.26/linux/x86_64
 golang/go@latest/linux/amd64
 golang/go@latest/linux/x86_64
 
-go.dev/dl/go1.26.2.linux-arm64.tar.gz
-golang/go@1.26.2/linux/aarch64
-golang/go@1.26.2/linux/arm64
+go.dev/dl/go1.26.3.linux-arm64.tar.gz
+golang/go@1.26.3/linux/aarch64
+golang/go@1.26.3/linux/arm64
 golang/go@1.26/linux/aarch64
 golang/go@1.26/linux/arm64
 golang/go@latest/linux/aarch64
@@ -83,10 +100,17 @@ golang/go@1.26.1/windows/ARM64
 
 go.dev/dl/go1.26.2.windows-amd64.zip
 golang/go@1.26.2/windows/AMD64
-golang/go@1.26/windows/AMD64
-golang/go@latest/windows/AMD64
 
 go.dev/dl/go1.26.2.windows-arm64.zip
 golang/go@1.26.2/windows/ARM64
+
+
+go.dev/dl/go1.26.3.windows-amd64.zip
+golang/go@1.26.3/windows/AMD64
+golang/go@1.26/windows/AMD64
+golang/go@latest/windows/AMD64
+
+go.dev/dl/go1.26.3.windows-arm64.zip
+golang/go@1.26.3/windows/ARM64
 golang/go@1.26/windows/ARM64
 golang/go@latest/windows/ARM64
