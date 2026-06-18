@@ -1,0 +1,6 @@
+path: /claude-code-releases/{{.Version}}/{{.Os}}-{{.Arch}}/claude
+platforms:
+  linux/_amd64/: linux/x64/
+  linux/_arm64/: linux/arm64/
+  darwin/_amd64/: darwin/x64/
+  darwin/_arm64/: darwin/arm64/

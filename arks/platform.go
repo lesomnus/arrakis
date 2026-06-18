@@ -261,7 +261,7 @@ func (m PlatformMap) Resolve(p Platform) (Platform, bool) {
 				score_ += 2
 			}
 		case "_64":
-			if !arch.Is64() {
+			if arch.Is64() {
 				score_ += 2
 			}
 		case "_amd32":

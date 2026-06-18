@@ -1,5 +1,5 @@
 {
-	"name": "lesomnus.arrakis",
+	"name": "lesomnus/arrakis",
 	"dockerComposeFile": "docker-compose.yaml",
 	"service": "dev",
 	"workspaceFolder": "/workspace",

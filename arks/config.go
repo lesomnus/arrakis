@@ -20,6 +20,11 @@ type Config struct {
 	Target TargetConfig
 }
 
+type TargetConfig struct {
+	Path   string
+	Suffix string
+}
+
 func NewConfig() Config {
 	return Config{}
 }
@@ -128,9 +133,4 @@ func (c Config) Build(app App) (iter.Seq2[[]Item, error], error) {
 			}
 		}
 	}, nil
-}
-
-type TargetConfig struct {
-	Path   string
-	Suffix string
 }

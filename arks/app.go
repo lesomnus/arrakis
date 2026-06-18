@@ -89,19 +89,3 @@ func ReadAppFromFs(fs fs.FS, p string) ([]App, error) {
 
 	return apps, nil
 }
-
-func (r App) Build(v Item) (string, error) {
-	tmpl := template.New("")
-	tmpl = tmpl.Funcs(templateFuncs)
-	tmpl, err := tmpl.Parse(r.Path)
-	if err != nil {
-		return "", err
-	}
-
-	buff := &strings.Builder{}
-	if err := tmpl.Execute(buff, v); err != nil {
-		return "", err
-	}
-
-	return buff.String(), nil
-}

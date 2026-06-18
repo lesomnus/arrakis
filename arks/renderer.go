@@ -9,7 +9,6 @@ import (
 )
 
 var Renders = map[string](func(io.Writer) Renderer){
-	"kv":   renderCtorFunc(NewKvRenderer),
 	"tree": renderCtorFunc(NewTreePrinter),
 	"cfkv": renderCtorFunc(NewCloudFlareKvRenderer),
 }
@@ -28,26 +27,6 @@ type Renderer interface {
 type CloudFlareKvRenderer struct {
 	w io.Writer
 	s string
-}
-
-type KvRenderer struct {
-	w io.Writer
-}
-
-func NewKvRenderer(w io.Writer) *KvRenderer {
-	return &KvRenderer{w}
-}
-
-func (p *KvRenderer) Render(c Config, v Item) error {
-	_, err := fmt.Fprintf(p.w, "%s,%s}", v.Origin, v.Target)
-	return err
-}
-
-func (p *KvRenderer) Flush() error {
-	if f, ok := p.w.(interface{ Flush() error }); ok {
-		return f.Flush()
-	}
-	return nil
 }
 
 func NewCloudFlareKvRenderer(w io.Writer) *CloudFlareKvRenderer {
@@ -96,6 +75,7 @@ func (p *TreePrinter) Render(c Config, v Item) error {
 	}
 
 	p.item_last = v
+	p.items[v.Target] = append(p.items[v.Target], v)
 	return nil
 }
 
