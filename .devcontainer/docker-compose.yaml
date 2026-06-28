@@ -3,10 +3,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-
     command: sleep infinity
 
+    user: "1000"
     privileged: true
+    environment:
+      - SHELL=/bin/zsh
 
     volumes:
       - go.cache.mod:/home/hypnos/go/pkg/mod

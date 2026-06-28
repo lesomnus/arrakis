@@ -1,4 +1,4 @@
-# arrkis
+# arrakis
 
 The artifacts must flow.
 
