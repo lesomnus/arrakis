@@ -1,0 +1,4 @@
+kind: http
+url: https://api.releases.hashicorp.com/v1/releases/terraform?limit=20
+match: '"version":"([^"]+)"'
+limit: 10

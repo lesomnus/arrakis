@@ -1,0 +1,4 @@
+kind: http
+url: https://go.dev/dl/?mode=json&include=all
+match: '"version":\s*"go([\d.]+)"'
+limit: 12

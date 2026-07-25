@@ -22,6 +22,7 @@ func NewCmdRoot() *xli.Command {
 			NewCmdCommit(),
 			NewCmdDiff(),
 			NewCmdTest(),
+			NewCmdBump(),
 		},
 		Handler: xli.Chain(
 			xli.RequireSubcommand(),

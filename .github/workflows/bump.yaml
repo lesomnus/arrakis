@@ -1,0 +1,41 @@
+name: Bump
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Every day at 06:00 UTC.
+    - cron: "0 6 * * *"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Discover new versions
+        env:
+          # Raises the GitHub API rate limit for `github` sources.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: go run . bump
+
+      - name: Open pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: bump/versions
+          title: "Bump port versions"
+          commit-message: "Bump port versions"
+          body: |
+            Automated version bump discovered by `arks bump`.
+
+            Review the diff, then merge to let the `Sync` workflow regenerate
+            snapshots and update the KV store.
+          delete-branch: true
