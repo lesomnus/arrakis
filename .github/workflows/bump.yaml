@@ -30,6 +30,11 @@ jobs:
       - name: Open pull request
         uses: peter-evans/create-pull-request@v7
         with:
+          # Use a fine-grained PAT so the PR is created under a non-default
+          # identity. This bypasses the "GitHub Actions is not permitted to
+          # create or approve pull requests" restriction on the default
+          # GITHUB_TOKEN, and lets the resulting PR trigger other workflows.
+          token: ${{ secrets.BUMP_TOKEN }}
           branch: bump/versions
           title: "Bump port versions"
           commit-message: "Bump port versions"
