@@ -88,24 +88,41 @@ golang/go@1.25.11/linux/arm64
 go.dev/dl/go1.25.12.darwin-amd64.tar.gz
 golang/go@1.25.12/darwin/amd64
 golang/go@1.25.12/darwin/x86_64
-golang/go@1.25/darwin/amd64
-golang/go@1.25/darwin/x86_64
 
 go.dev/dl/go1.25.12.darwin-arm64.tar.gz
 golang/go@1.25.12/darwin/aarch64
 golang/go@1.25.12/darwin/arm64
-golang/go@1.25/darwin/aarch64
-golang/go@1.25/darwin/arm64
 
 go.dev/dl/go1.25.12.linux-amd64.tar.gz
 golang/go@1.25.12/linux/amd64
 golang/go@1.25.12/linux/x86_64
-golang/go@1.25/linux/amd64
-golang/go@1.25/linux/x86_64
 
 go.dev/dl/go1.25.12.linux-arm64.tar.gz
 golang/go@1.25.12/linux/aarch64
 golang/go@1.25.12/linux/arm64
+
+
+go.dev/dl/go1.25.13.darwin-amd64.tar.gz
+golang/go@1.25.13/darwin/amd64
+golang/go@1.25.13/darwin/x86_64
+golang/go@1.25/darwin/amd64
+golang/go@1.25/darwin/x86_64
+
+go.dev/dl/go1.25.13.darwin-arm64.tar.gz
+golang/go@1.25.13/darwin/aarch64
+golang/go@1.25.13/darwin/arm64
+golang/go@1.25/darwin/aarch64
+golang/go@1.25/darwin/arm64
+
+go.dev/dl/go1.25.13.linux-amd64.tar.gz
+golang/go@1.25.13/linux/amd64
+golang/go@1.25.13/linux/x86_64
+golang/go@1.25/linux/amd64
+golang/go@1.25/linux/x86_64
+
+go.dev/dl/go1.25.13.linux-arm64.tar.gz
+golang/go@1.25.13/linux/aarch64
+golang/go@1.25.13/linux/arm64
 golang/go@1.25/linux/aarch64
 golang/go@1.25/linux/arm64
 
@@ -198,30 +215,47 @@ golang/go@1.26.4/linux/arm64
 go.dev/dl/go1.26.5.darwin-amd64.tar.gz
 golang/go@1.26.5/darwin/amd64
 golang/go@1.26.5/darwin/x86_64
+
+go.dev/dl/go1.26.5.darwin-arm64.tar.gz
+golang/go@1.26.5/darwin/aarch64
+golang/go@1.26.5/darwin/arm64
+
+go.dev/dl/go1.26.5.linux-amd64.tar.gz
+golang/go@1.26.5/linux/amd64
+golang/go@1.26.5/linux/x86_64
+
+go.dev/dl/go1.26.5.linux-arm64.tar.gz
+golang/go@1.26.5/linux/aarch64
+golang/go@1.26.5/linux/arm64
+
+
+go.dev/dl/go1.26.6.darwin-amd64.tar.gz
+golang/go@1.26.6/darwin/amd64
+golang/go@1.26.6/darwin/x86_64
 golang/go@1.26/darwin/amd64
 golang/go@1.26/darwin/x86_64
 golang/go@latest/darwin/amd64
 golang/go@latest/darwin/x86_64
 
-go.dev/dl/go1.26.5.darwin-arm64.tar.gz
-golang/go@1.26.5/darwin/aarch64
-golang/go@1.26.5/darwin/arm64
+go.dev/dl/go1.26.6.darwin-arm64.tar.gz
+golang/go@1.26.6/darwin/aarch64
+golang/go@1.26.6/darwin/arm64
 golang/go@1.26/darwin/aarch64
 golang/go@1.26/darwin/arm64
 golang/go@latest/darwin/aarch64
 golang/go@latest/darwin/arm64
 
-go.dev/dl/go1.26.5.linux-amd64.tar.gz
-golang/go@1.26.5/linux/amd64
-golang/go@1.26.5/linux/x86_64
+go.dev/dl/go1.26.6.linux-amd64.tar.gz
+golang/go@1.26.6/linux/amd64
+golang/go@1.26.6/linux/x86_64
 golang/go@1.26/linux/amd64
 golang/go@1.26/linux/x86_64
 golang/go@latest/linux/amd64
 golang/go@latest/linux/x86_64
 
-go.dev/dl/go1.26.5.linux-arm64.tar.gz
-golang/go@1.26.5/linux/aarch64
-golang/go@1.26.5/linux/arm64
+go.dev/dl/go1.26.6.linux-arm64.tar.gz
+golang/go@1.26.6/linux/aarch64
+golang/go@1.26.6/linux/arm64
 golang/go@1.26/linux/aarch64
 golang/go@1.26/linux/arm64
 golang/go@latest/linux/aarch64
@@ -265,10 +299,17 @@ golang/go@1.25.11/windows/ARM64
 
 go.dev/dl/go1.25.12.windows-amd64.zip
 golang/go@1.25.12/windows/AMD64
-golang/go@1.25/windows/AMD64
 
 go.dev/dl/go1.25.12.windows-arm64.zip
 golang/go@1.25.12/windows/ARM64
+
+
+go.dev/dl/go1.25.13.windows-amd64.zip
+golang/go@1.25.13/windows/AMD64
+golang/go@1.25/windows/AMD64
+
+go.dev/dl/go1.25.13.windows-arm64.zip
+golang/go@1.25.13/windows/ARM64
 golang/go@1.25/windows/ARM64
 
 
@@ -309,10 +350,17 @@ golang/go@1.26.4/windows/ARM64
 
 go.dev/dl/go1.26.5.windows-amd64.zip
 golang/go@1.26.5/windows/AMD64
-golang/go@1.26/windows/AMD64
-golang/go@latest/windows/AMD64
 
 go.dev/dl/go1.26.5.windows-arm64.zip
 golang/go@1.26.5/windows/ARM64
+
+
+go.dev/dl/go1.26.6.windows-amd64.zip
+golang/go@1.26.6/windows/AMD64
+golang/go@1.26/windows/AMD64
+golang/go@latest/windows/AMD64
+
+go.dev/dl/go1.26.6.windows-arm64.zip
+golang/go@1.26.6/windows/ARM64
 golang/go@1.26/windows/ARM64
 golang/go@latest/windows/ARM64
