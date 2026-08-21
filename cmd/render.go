@@ -21,7 +21,7 @@ func NewCmdRender() *xli.Command {
 
 		Flags: flg.Flags{
 			&flg.String{Name: "port", Value: &default_port, Brief: "Path to the port directory"},
-			&flg.String{Name: "kind", Value: &default_renderer, Brief: "Output kind (tree, cfkv)"},
+			&flg.String{Name: "kind", Value: &default_renderer, Brief: "Output kind (tree, cfkv, index)"},
 			&flg.Switch{Name: "diff", Brief: "Render only differences with the snapshot"},
 		},
 

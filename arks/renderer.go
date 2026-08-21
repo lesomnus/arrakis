@@ -9,8 +9,9 @@ import (
 )
 
 var Renders = map[string](func(io.Writer) Renderer){
-	"tree": renderCtorFunc(NewTreePrinter),
-	"cfkv": renderCtorFunc(NewCloudFlareKvRenderer),
+	"tree":  renderCtorFunc(NewTreePrinter),
+	"cfkv":  renderCtorFunc(NewCloudFlareKvRenderer),
+	"index": renderCtorFunc(NewIndexRenderer),
 }
 
 func renderCtorFunc[T Renderer](f func(io.Writer) T) func(io.Writer) Renderer {
