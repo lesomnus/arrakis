@@ -119,6 +119,12 @@ is attributable to a single decision.
 
 ### Results
 
+> [!NOTE]
+> The table below was measured with the previous greedy matcher and is being
+> regenerated. Replacing it with the optimal dynamic program made every
+> strategy several times slower and narrowed the gap between them; run
+> `node bench/run.mjs` for current figures.
+
 At N = 100,000, on one machine, with the query workload in `corpus.mjs`:
 
 | strategy | upfront | +click | mean | p99 | kept | vs base |
