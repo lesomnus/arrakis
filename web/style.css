@@ -1,0 +1,263 @@
+:root {
+	--bg: #fbfaf7;
+	--fg: #1c1a17;
+	--muted: #6b655c;
+	--line: #e2ddd3;
+	--card: #ffffff;
+	--accent: #b4571f;
+	--accent-soft: #f6e6d8;
+	--code-bg: #f2efe8;
+	--radius: 10px;
+	--mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--bg: #161513;
+		--fg: #eae6de;
+		--muted: #97907f;
+		--line: #2e2b26;
+		--card: #1e1c19;
+		--accent: #e0894a;
+		--accent-soft: #35281d;
+		--code-bg: #24211d;
+	}
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0 auto;
+	padding: 3rem 1.25rem 4rem;
+	max-width: 46rem;
+	background: var(--bg);
+	color: var(--fg);
+	font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+	line-height: 1.5;
+	-webkit-text-size-adjust: 100%;
+}
+
+h1 {
+	margin: 0;
+	font-size: 1.6rem;
+	letter-spacing: -0.02em;
+}
+
+.tagline {
+	margin: 0.15rem 0 1rem;
+	color: var(--muted);
+	font-style: italic;
+}
+
+.scheme {
+	margin: 0 0 2rem;
+	color: var(--muted);
+	font-size: 0.875rem;
+}
+
+.scheme code {
+	display: inline-block;
+	padding: 0.15rem 0.4rem;
+	border-radius: 6px;
+	background: var(--code-bg);
+	color: var(--fg);
+	font-family: var(--mono);
+	font-size: 0.8125rem;
+}
+
+.scheme b {
+	color: var(--accent);
+	font-weight: 600;
+}
+
+#q {
+	width: 100%;
+	padding: 0.7rem 0.9rem;
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	background: var(--card);
+	color: var(--fg);
+	font-size: 1rem;
+	font-family: inherit;
+}
+
+#q:focus {
+	outline: 2px solid var(--accent);
+	outline-offset: -1px;
+}
+
+.stat {
+	margin: 0.45rem 0.2rem 1.25rem;
+	min-height: 1.2em;
+	color: var(--muted);
+	font-size: 0.75rem;
+	font-family: var(--mono);
+}
+
+.results {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.port {
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	background: var(--card);
+	overflow: hidden;
+}
+
+.port[aria-current="true"] {
+	border-color: var(--accent);
+}
+
+.port > button {
+	display: flex;
+	gap: 0.6rem;
+	align-items: baseline;
+	flex-wrap: wrap;
+	width: 100%;
+	padding: 0.7rem 0.9rem;
+	border: 0;
+	background: none;
+	color: inherit;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
+.port > button:hover {
+	background: var(--accent-soft);
+}
+
+.id {
+	font-family: var(--mono);
+	font-size: 0.9375rem;
+}
+
+.id mark {
+	padding: 0;
+	border-radius: 2px;
+	background: var(--accent-soft);
+	color: var(--accent);
+	font-weight: 700;
+}
+
+.ver {
+	padding: 0.05rem 0.4rem;
+	border-radius: 999px;
+	background: var(--accent-soft);
+	color: var(--accent);
+	font-size: 0.75rem;
+	font-family: var(--mono);
+}
+
+.count {
+	margin-left: auto;
+	color: var(--muted);
+	font-size: 0.75rem;
+}
+
+.detail {
+	padding: 0 0.9rem 0.9rem;
+	border-top: 1px solid var(--line);
+}
+
+.row {
+	display: flex;
+	gap: 0.35rem;
+	align-items: center;
+	flex-wrap: wrap;
+	margin-top: 0.8rem;
+}
+
+.row > label {
+	width: 4.5rem;
+	color: var(--muted);
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.chip {
+	padding: 0.2rem 0.55rem;
+	border: 1px solid var(--line);
+	border-radius: 999px;
+	background: transparent;
+	color: var(--fg);
+	font-size: 0.8125rem;
+	font-family: var(--mono);
+	cursor: pointer;
+}
+
+.chip[aria-pressed="true"] {
+	border-color: var(--accent);
+	background: var(--accent-soft);
+	color: var(--accent);
+	font-weight: 600;
+}
+
+select.chip {
+	appearance: auto;
+	padding: 0.2rem 0.4rem;
+}
+
+.cmd {
+	display: flex;
+	gap: 0.5rem;
+	align-items: flex-start;
+	margin-top: 0.9rem;
+	padding: 0.6rem 0.7rem;
+	border-radius: 8px;
+	background: var(--code-bg);
+}
+
+.cmd code {
+	flex: 1;
+	overflow-x: auto;
+	font-family: var(--mono);
+	font-size: 0.8125rem;
+	white-space: pre;
+}
+
+.cmd button {
+	flex: none;
+	padding: 0.2rem 0.5rem;
+	border: 1px solid var(--line);
+	border-radius: 6px;
+	background: var(--card);
+	color: var(--muted);
+	font-size: 0.75rem;
+	cursor: pointer;
+}
+
+.cmd button:hover {
+	color: var(--accent);
+	border-color: var(--accent);
+}
+
+.empty {
+	margin-top: 1.5rem;
+	color: var(--muted);
+	text-align: center;
+}
+
+footer {
+	margin-top: 3rem;
+	color: var(--muted);
+	font-size: 0.8125rem;
+	text-align: center;
+}
+
+footer a {
+	color: var(--muted);
+}
+
+footer span {
+	margin: 0 0.35rem;
+}

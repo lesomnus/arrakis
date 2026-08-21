@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>arrakis &mdash; port index</title>
+		<meta name="description" content="Search the ports registered in arrakis and get a ready-to-run download command." />
+		<link rel="stylesheet" href="./style.css" />
+	</head>
+	<body>
+		<header>
+			<h1>arrakis</h1>
+			<p class="tagline">The artifacts must flow.</p>
+			<p class="scheme">
+				<code>https://pkg.opt.td/<b>&lt;port&gt;</b>@<b>&lt;version&gt;</b>/<b>&lt;os&gt;</b>/<b>&lt;arch&gt;</b></code>
+				redirects to the upstream release asset.
+			</p>
+		</header>
+
+		<main>
+			<div class="search">
+				<input
+					id="q"
+					type="search"
+					placeholder="Search ports&hellip;"
+					autocomplete="off"
+					autocapitalize="off"
+					spellcheck="false"
+					autofocus
+				/>
+				<p class="stat" id="stat" aria-live="polite"></p>
+			</div>
+
+			<ul id="results" class="results"></ul>
+			<p id="empty" class="empty" hidden>No port matches that query.</p>
+		</main>
+
+		<footer>
+			<a href="https://github.com/lesomnus/arrakis">source</a>
+			<span aria-hidden="true">&middot;</span>
+			<a href="./index.json">index.json</a>
+			<span aria-hidden="true">&middot;</span>
+			<span id="build"></span>
+		</footer>
+
+		<script type="module" src="./app.js"></script>
+	</body>
+</html>
