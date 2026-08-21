@@ -119,43 +119,64 @@ is attributable to a single decision.
 
 ### Results
 
-> [!NOTE]
-> The table below was measured with the previous greedy matcher and is being
-> regenerated. Replacing it with the optimal dynamic program made every
-> strategy several times slower and narrowed the gap between them; run
-> `node bench/run.mjs` for current figures.
-
 At N = 100,000, on one machine, with the query workload in `corpus.mjs`:
 
 | strategy | upfront | +click | mean | p99 | kept | vs base |
 |---|---|---|---|---|---|---|
-| linear scan | 11.66 MB | - | 110.72 ms | 179.76 ms | 100% | 1.00x |
-| + char bitmask | 12.18 MB | - | 97.93 ms | 185.50 ms | 69% | 1.13x |
-| + split payload | 3.86 MB | 3.4 KB | 99.98 ms | 206.04 ms | 69% | 1.11x |
-| + top-K heap | 3.86 MB | 3.4 KB | 49.15 ms | 96.96 ms | 69% | 2.25x |
-| + packed columns | **3.73 MB** | 3.4 KB | **14.46 ms** | 32.89 ms | 69% | **7.66x** |
+| linear scan | 11.66 MB | - | 323.23 ms | 595.51 ms | 100% | 1.00x |
+| + char bitmask | 12.18 MB | - | 246.97 ms | 550.83 ms | 69% | 1.31x |
+| + split payload | 3.86 MB | 3.4 KB | 241.69 ms | 585.98 ms | 69% | 1.34x |
+| + top-K heap | 3.86 MB | 3.4 KB | 198.08 ms | 490.74 ms | 69% | 1.63x |
+| + packed columns | **3.73 MB** | 3.4 KB | **130.32 ms** | 333.97 ms | 69% | **2.48x** |
 
-Three findings, in order of how much they moved the number.
+**Splitting the payload is the largest single win and it is not a speed win at
+all.** 11.66 MB down to 3.86 MB, with a click costing 3.4 KB, and latency
+unchanged to within noise. Versions and platforms dominate the bytes and are
+only ever needed for the one port the user selects.
 
-**Packing the corpus into byte buffers is worth more than any filter** -- 2.25x
-to 7.66x from that change alone. The baseline spends most of its time on
-property loads and UTF-16 string comparisons, not on the matching algorithm.
-Struct-of-arrays removes that overhead and nothing else changed: `--check`
-confirms the byte matcher returns the same ranking as the string one.
+**Packing the corpus into byte buffers is the largest speed win** -- 1.63x to
+2.48x from replacing an array of JS objects with a flat `Uint8Array` and
+`Uint32Array` offsets. Property loads and UTF-16 comparisons, not the matching
+algorithm, were a third of the remaining time. `--check` confirms the byte
+matcher returns the same ranking as the string one.
 
-**Sorting was about half the cost at scale.** A one-character query matches most
-of the corpus, so the baseline built a 100,000-element array and sorted all of
-it to render 50 rows. Bounding the selection to K is the single cheapest win
-here (1.11x to 2.25x) and needs no change to the index.
+**Bounding the result set to K is the cheapest win** -- 1.34x to 1.63x, with no
+change to the index format. A one-character query matches most of the corpus,
+so the baseline built a 100,000-element array and sorted all of it to render 50
+rows.
 
-**The character bitmask is weak on this corpus** -- 1.13x. The `kept by query
+**The character bitmask is weak on this corpus** -- 1.31x. The `kept by query
 length` row explains it: the filter rejects 15% of the corpus on a 1-character
 query and 43% on a 6-character one. Search boxes receive mostly short prefixes,
 and nearly every port contains `b` or `u`. It works well in fzf because file
 paths have a far sparser character distribution than package names do.
 
-Splitting the payload does not change latency at all -- it is purely a transfer
-win, and a large one: 11.66 MB to 3.86 MB, with a click costing 3.4 KB.
+### What changed when the matcher got heavier
+
+These numbers were re-measured after `score()` moved from a single greedy pass
+to the dynamic program described below. The whole table got about three times
+slower, but not uniformly, and the pattern is the useful part:
+
+| | greedy | optimal DP |
+|---|---|---|
+| baseline mean | 110.72 ms | 323.23 ms |
+| bitmask, marginal | 1.13x | 1.31x |
+| top-K, marginal | 2.03x | 1.22x |
+| packed, marginal | 3.27x | 1.52x |
+| end to end | 7.66x | 2.48x |
+
+The prefilter got **more** valuable, because the work it skips is now more
+expensive. Sorting and memory layout got **less** valuable, because matching
+now dominates the time they used to share. Optimizing the data path pays in
+proportion to how cheap the algorithm is; make the algorithm heavier and those
+gains compress toward nothing.
+
+If the corpus ever grew enough for this to matter, the move is not to undo the
+DP but to split it the way positions already are: greedy scores for ranking,
+the DP only for the rows on screen. The greedy scores put the right port first
+on every query tried before the switch, but that was never measured at scale --
+so treat it as a lead to verify, not a result. At seven ports it is not worth a
+second code path either way.
 
 ### On the matcher
 
@@ -206,6 +227,7 @@ The measured thresholds for revisiting that:
 
 - **~1,000 ports** -- the upfront payload passes ~100 KB gzipped, at which point
   the transfer saved by `02` exceeds the round trip it costs on click.
-- **~10,000 ports** -- a query passes 16 ms, one frame, so typing starts to feel
+- **~5,000 ports** -- a query passes 16 ms, one frame, so typing starts to feel
   it. `03` is the cheap fix and does not touch the index format.
-- **beyond that** -- `04`, and then the question stops being about JavaScript.
+- **beyond that** -- `04`, then greedy-score-with-DP-highlighting, and then the
+  question stops being about JavaScript.
