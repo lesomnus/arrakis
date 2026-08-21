@@ -57,14 +57,28 @@ h1 {
 	font-size: 0.875rem;
 }
 
+/* Narrow: wrap at the separators rather than clip, since the whole point of
+   this line is that the reader can see the shape of the URL. */
 .scheme code {
-	display: inline-block;
-	padding: 0.15rem 0.4rem;
+	display: block;
+	max-width: 100%;
+	padding: 0.3rem 0.5rem;
 	border-radius: 6px;
 	background: var(--code-bg);
 	color: var(--fg);
 	font-family: var(--mono);
 	font-size: 0.8125rem;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+}
+
+@media (min-width: 34rem) {
+	.scheme code {
+		display: inline-block;
+		width: auto;
+		vertical-align: middle;
+		white-space: pre;
+	}
 }
 
 .scheme b {
@@ -335,11 +349,23 @@ select.chip:focus-visible {
 	}
 
 	select.chip::picker(select) {
+		max-height: min(18rem, 60vh);
+		overflow-y: auto;
 		border: 1px solid var(--line);
 		border-radius: var(--radius);
 		padding: 0.25rem;
 		background: var(--card);
 		box-shadow: 0 10px 30px rgb(0 0 0 / 0.16);
+	}
+
+	select.chip option:disabled {
+		color: var(--muted);
+		font-style: italic;
+	}
+
+	select.chip option:disabled:hover {
+		background: none;
+		color: var(--muted);
 	}
 
 	select.chip option {

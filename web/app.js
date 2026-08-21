@@ -1,4 +1,4 @@
-import { normalize, scorePort } from './search.js';
+import { normalize, positionsOf, scorePort } from './search.js';
 
 const HOST = 'pkg.opt.td';
 const SHELL_ARCH = { linux: '$(uname -m)', darwin: '$(uname -m)', windows: '${env:PROCESSOR_ARCHITECTURE}' };
@@ -47,7 +47,12 @@ let openId = null;
 init();
 
 async function init() {
-	el.build.textContent = document.documentElement.dataset.build ?? '';
+	// Injected by the Pages workflow; absent when serving the files directly.
+	const build = document.documentElement.dataset.build;
+	if (build) {
+		el.build.textContent = `· ${build}`;
+		el.build.hidden = false;
+	}
 	try {
 		const res = await fetch('./index.json', { cache: 'no-cache' });
 		if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -168,7 +173,9 @@ function run() {
 	const hits = search(query);
 	const ms = performance.now() - t0;
 
-	el.stat.textContent = `${hits.length} / ${index.ports.length} ports · ${ms.toFixed(3)} ms`;
+	el.stat.textContent = query
+		? `${hits.length} / ${index.ports.length} ports · ${ms < 0.05 ? '<0.05' : ms.toFixed(2)} ms`
+		: plural(index.ports.length, 'port');
 	el.empty.hidden = hits.length > 0;
 	draw(hits);
 
@@ -180,21 +187,24 @@ function run() {
 
 function search(query) {
 	if (!query) {
-		return index.ports.map((port) => ({ port, positions: [] }));
+		return index.ports.map((port) => ({ port, onId: false }));
 	}
 
 	const hits = [];
 	for (const port of index.ports) {
 		const hit = scorePort(query, port);
-		if (hit) hits.push({ port, score: hit.score, positions: hit.field === 'id' ? hit.positions : [] });
+		if (hit) hits.push({ port, score: hit.score, onId: hit.onId });
 	}
 	hits.sort((a, b) => b.score - a.score);
 	return hits;
 }
 
 function draw(hits) {
+	const query = normalize(el.q.value);
 	el.results.replaceChildren(
-		...hits.map(({ port, positions }) => {
+		...hits.map(({ port, onId }) => {
+			// Backtracking the alignment is only worth it for what is on screen.
+			const positions = onId ? positionsOf(query, port.id) : [];
 			const supported = platformOf(port) !== null;
 
 			const li = document.createElement('li');
@@ -208,7 +218,7 @@ function draw(hits) {
 			head.append(
 				span('id', highlight(port.id, positions)),
 				port.latest ? span('ver', port.latest) : '',
-				span('count', supported ? `${port.versions.length} versions` : `no ${platform.os}/${platform.arch} build`),
+				span('count', supported ? plural(port.versions.length, 'version') : `no ${platform.os}/${platform.arch} build`),
 			);
 			head.addEventListener('click', () => {
 				openId = openId === port.id ? null : port.id;
@@ -250,7 +260,11 @@ function detail(port) {
 	// placeholder. Otherwise the select holds the selection and should read as
 	// pressed, the same way the alias chips do.
 	const pinned = port.versions.some((v) => v.v === state.version);
-	if (!pinned) select.prepend(new Option('pin exact…', '', true, true));
+	if (!pinned) {
+		const placeholder = new Option('pin exact…', '', true, true);
+		placeholder.disabled = true;
+		select.prepend(placeholder);
+	}
 	select.dataset.pinned = String(pinned);
 	select.addEventListener('change', () => {
 		if (!select.value) return;
@@ -373,6 +387,10 @@ function mark(text) {
 	const m = document.createElement('mark');
 	m.textContent = text;
 	return m;
+}
+
+function plural(n, word) {
+	return `${n} ${word}${n === 1 ? '' : 's'}`;
 }
 
 function span(cls, content) {

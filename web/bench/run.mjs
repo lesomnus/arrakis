@@ -71,12 +71,15 @@ for (const n of SIZES) {
 		const shards = s.chunks ? s.chunks(index).map((c) => gzipSync(c, { level: 9 }).length).sort((a, b) => a - b) : [];
 		const chunk = shards.length > 0 ? shards[Math.floor(shards.length / 2)] : 0;
 
-		// Warm up so JIT state is comparable across strategies.
-		for (let i = 0; i < 3; i++) for (const q of qs) s.search(index, q, LIMIT);
+		// Warm up so JIT state is comparable across strategies. One pass is
+		// enough to reach steady state; at large N a warmup costs as much as
+		// the measurement, so scale it down rather than paying it three times.
+		const warmups = n <= 1_000 ? 3 : 1;
+		for (let i = 0; i < warmups; i++) for (const q of qs) s.search(index, q, LIMIT);
 
 		const samples = [];
 		let hits = 0;
-		const reps = n <= 1_000 ? 20 : n <= 10_000 ? 5 : 2;
+		const reps = n <= 1_000 ? 20 : n <= 10_000 ? 3 : 1;
 		for (let r = 0; r < reps; r++) {
 			for (const q of qs) {
 				const t = performance.now();
@@ -135,9 +138,10 @@ function breakdown(ports, qs) {
 	// Strategies that share a prefilter produce identical rows; collapse them
 	// so a genuinely different filter stands out.
 	const rows = new Map();
+	const sample = ports.length > 20_000 ? ports.slice(0, 20_000) : ports;
 	for (const s of filters) {
 		const buckets = new Map();
-		const index = s.build(ports);
+		const index = s.build(sample);
 		for (const q of qs) {
 			const len = Math.min(q.length, 6);
 			const p = s.probe(index, q);

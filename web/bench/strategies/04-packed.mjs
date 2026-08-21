@@ -10,7 +10,7 @@
 // than a wrapper. That is a real cost: the agreement check in run.mjs is what
 // keeps it honest, and a divergence here is a bug, not a tuning choice.
 
-import { BONUS_BOUNDARY, BONUS_CONSECUTIVE, BONUS_FIRST_CHAR, PENALTY_GAP_EXTEND, PENALTY_GAP_START, SCORE_MATCH, byScore, maskOf, normalize, passes } from '../../search.js';
+import { BONUS_BOUNDARY, BONUS_CONSECUTIVE, BONUS_FIRST_CHAR, SCORE_MATCH, byScore, maskOf, normalize, passes } from '../../search.js';
 
 export { chunks } from './02-split.mjs';
 
@@ -154,56 +154,74 @@ function idAt(index, i) {
 	return s;
 }
 
+// Scratch rows, reused across every document and query for the same reason
+// search.js reuses its own: this runs once per surviving port per keystroke.
+const NEG = -Infinity;
+let rowPrev = new Float64Array(0);
+let rowCurr = new Float64Array(0);
+
 /**
- * Byte-level equivalent of match() in search.js, returning the score only.
- * Positions are not needed here, which saves the array allocation per hit.
+ * Byte-level equivalent of score() in search.js: the same dynamic program,
+ * reading a slice of a flat buffer instead of a JS string. Duplicated on
+ * purpose -- the agreement check in run.mjs is what keeps the two honest.
  */
 function score(needle, buf, start, end) {
-	const n = needle.length;
-	const len = end - start;
-	if (n === 0) return 0;
-	if (n > len) return null;
+	const m = needle.length;
+	const n = end - start;
+	if (m === 0) return 0;
+	if (m > n) return null;
 
-	let ni = 0;
-	let stop = -1;
-	for (let i = start; i < end; i++) {
-		if (buf[i] === needle[ni] && ++ni === n) {
-			stop = i + 1;
-			break;
-		}
+	if (rowPrev.length < n) {
+		rowPrev = new Float64Array(n);
+		rowCurr = new Float64Array(n);
 	}
-	if (stop < 0) return null;
+	let prev = rowPrev;
+	let curr = rowCurr;
 
-	ni = n - 1;
-	let from = start;
-	for (let i = stop - 1; i >= start; i--) {
-		if (buf[i] === needle[ni] && ni-- === 0) {
-			from = i;
-			break;
-		}
+	const first = needle[0];
+	for (let j = 0; j < n; j++) {
+		prev[j] = buf[start + j] === first ? SCORE_MATCH + boundary(buf, start, j) + BONUS_FIRST_CHAR : NEG;
 	}
 
-	let total = 0;
-	let consecutive = 0;
-	let inGap = false;
-	ni = 0;
-	for (let i = from; i < stop; i++) {
-		if (buf[i] === needle[ni]) {
-			total += SCORE_MATCH;
-			let bonus = i === start || IS_BOUNDARY[buf[i - 1]] === 1 ? BONUS_BOUNDARY : 0;
-			if (consecutive > 0 && bonus < BONUS_CONSECUTIVE) bonus = BONUS_CONSECUTIVE;
-			if (ni === 0) bonus += BONUS_FIRST_CHAR;
-			total += bonus;
-			consecutive++;
-			inGap = false;
-			ni++;
-		} else {
-			total += inGap ? PENALTY_GAP_EXTEND : PENALTY_GAP_START;
-			inGap = true;
-			consecutive = 0;
+	for (let k = 1; k < m; k++) {
+		const ch = needle[k];
+		let running = NEG;
+
+		for (let j = 0; j < n; j++) {
+			if (j >= 2 && prev[j - 2] !== NEG) {
+				const v = prev[j - 2] + (j - 2);
+				if (v > running) running = v;
+			}
+			if (buf[start + j] !== ch) {
+				curr[j] = NEG;
+				continue;
+			}
+
+			const b = boundary(buf, start, j);
+			let best = NEG;
+			if (j >= 1 && prev[j - 1] !== NEG) {
+				const consec = b > BONUS_CONSECUTIVE ? b : BONUS_CONSECUTIVE;
+				best = prev[j - 1] + SCORE_MATCH + consec;
+			}
+			if (running !== NEG) {
+				const withGap = running - j - 1 + SCORE_MATCH + b;
+				if (withGap > best) best = withGap;
+			}
+			curr[j] = best;
 		}
+
+		const t = prev;
+		prev = curr;
+		curr = t;
 	}
-	return total;
+
+	let best = NEG;
+	for (let j = 0; j < n; j++) if (prev[j] > best) best = prev[j];
+	return best === NEG ? null : best;
+}
+
+function boundary(buf, start, j) {
+	return j === 0 || IS_BOUNDARY[buf[start + j - 1]] === 1 ? BONUS_BOUNDARY : 0;
 }
 
 function push(heap, entry) {

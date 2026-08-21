@@ -57,71 +57,167 @@ export function passes(docLo, docHi, qLo, qHi) {
 	return (docLo & qLo) === qLo && (docHi & qHi) === qHi;
 }
 
-function bonusAt(haystack, i) {
-	if (i === 0) return BONUS_BOUNDARY;
-	return BOUNDARY.has(haystack[i - 1]) ? BONUS_BOUNDARY : 0;
+const NEG = -Infinity;
+
+// Scratch rows for the score-only path, grown on demand and reused. Scoring
+// runs once per port per keystroke, so allocating here would dominate.
+let rowPrev = new Float64Array(0);
+let rowCurr = new Float64Array(0);
+
+function grow(n) {
+	if (rowPrev.length < n) {
+		rowPrev = new Float64Array(n);
+		rowCurr = new Float64Array(n);
+	}
+}
+
+/** A match at j starts a word when it opens the string or follows a separator. */
+function bonusAt(haystack, j) {
+	return j === 0 || BOUNDARY.has(haystack[j - 1]) ? BONUS_BOUNDARY : 0;
 }
 
 /**
- * Match `needle` against `haystack`, both already normalized.
- * Returns null when `needle` is not a subsequence, otherwise the score and the
- * matched character positions.
+ * Best score for `needle` as a subsequence of `haystack`, or null if it is not
+ * one. Both must already be normalized.
+ *
+ * This is a dynamic program over (needle index, haystack index) rather than a
+ * single greedy pass. Greedy takes the leftmost match, which for "gh" against
+ * "github.com/gh" lands on g...h inside "github" and leaves the exact "gh" at
+ * the end unhighlighted -- correct by the letter, obviously wrong to a reader.
+ *
+ * The gap penalty is affine, so the search over previous positions collapses
+ * into a running maximum and the whole thing stays O(needle x haystack).
  */
-export function match(needle, haystack) {
-	const n = needle.length;
-	const h = haystack.length;
-	if (n === 0) return { score: 0, positions: [] };
-	if (n > h) return null;
+export function score(needle, haystack) {
+	const m = needle.length;
+	const n = haystack.length;
+	if (m === 0) return 0;
+	if (m > n) return null;
 
-	// Forward: find the earliest position at which the needle is exhausted.
-	let ni = 0;
+	grow(n);
+	let prev = rowPrev;
+	let curr = rowCurr;
+
+	// First needle character: no predecessor, so only the opening bonus applies.
+	for (let j = 0; j < n; j++) {
+		prev[j] = haystack[j] === needle[0] ? SCORE_MATCH + bonusAt(haystack, j) + BONUS_FIRST_CHAR : NEG;
+	}
+
+	for (let k = 1; k < m; k++) {
+		const ch = needle[k];
+		// best over i <= j-2 of (prev[i] + i); the affine gap term folds into it.
+		let running = NEG;
+
+		for (let j = 0; j < n; j++) {
+			if (j >= 2 && prev[j - 2] !== NEG) {
+				const v = prev[j - 2] + (j - 2);
+				if (v > running) running = v;
+			}
+			if (haystack[j] !== ch) {
+				curr[j] = NEG;
+				continue;
+			}
+
+			const boundary = bonusAt(haystack, j);
+			let best = NEG;
+			// Adjacent to the previous match: no gap, consecutive bonus applies.
+			if (j >= 1 && prev[j - 1] !== NEG) {
+				best = prev[j - 1] + SCORE_MATCH + Math.max(boundary, BONUS_CONSECUTIVE);
+			}
+			// Separated by a gap of length j-i-1, penalised as -2-(gap length).
+			if (running !== NEG) {
+				const withGap = running - j - 1 + SCORE_MATCH + boundary;
+				if (withGap > best) best = withGap;
+			}
+			curr[j] = best;
+		}
+
+		const t = prev;
+		prev = curr;
+		curr = t;
+	}
+
+	let best = NEG;
+	for (let j = 0; j < n; j++) if (prev[j] > best) best = prev[j];
+	return best === NEG ? null : best;
+}
+
+/**
+ * The matched character positions of the best alignment, for highlighting.
+ *
+ * Kept apart from score() on purpose: only the rows actually rendered need
+ * positions, so the full table and its backtrack are paid for a few dozen
+ * times per keystroke rather than once per port.
+ */
+export function positionsOf(needle, haystack) {
+	const m = needle.length;
+	const n = haystack.length;
+	if (m === 0 || m > n) return [];
+
+	const table = [];
+	const from = [];
+
+	let prev = new Float64Array(n);
+	for (let j = 0; j < n; j++) {
+		prev[j] = haystack[j] === needle[0] ? SCORE_MATCH + bonusAt(haystack, j) + BONUS_FIRST_CHAR : NEG;
+	}
+	table.push(prev);
+	from.push(new Int32Array(n).fill(-1));
+
+	for (let k = 1; k < m; k++) {
+		const ch = needle[k];
+		const curr = new Float64Array(n);
+		const back = new Int32Array(n).fill(-1);
+
+		let running = NEG;
+		let runningAt = -1;
+		for (let j = 0; j < n; j++) {
+			if (j >= 2 && prev[j - 2] !== NEG) {
+				const v = prev[j - 2] + (j - 2);
+				if (v > running) {
+					running = v;
+					runningAt = j - 2;
+				}
+			}
+			if (haystack[j] !== ch) {
+				curr[j] = NEG;
+				continue;
+			}
+
+			const boundary = bonusAt(haystack, j);
+			let best = NEG;
+			let at = -1;
+			if (j >= 1 && prev[j - 1] !== NEG) {
+				best = prev[j - 1] + SCORE_MATCH + Math.max(boundary, BONUS_CONSECUTIVE);
+				at = j - 1;
+			}
+			if (running !== NEG) {
+				const withGap = running - j - 1 + SCORE_MATCH + boundary;
+				if (withGap > best) {
+					best = withGap;
+					at = runningAt;
+				}
+			}
+			curr[j] = best;
+			back[j] = at;
+		}
+
+		table.push(curr);
+		from.push(back);
+		prev = curr;
+	}
+
 	let end = -1;
-	for (let i = 0; i < h; i++) {
-		if (haystack[i] === needle[ni]) {
-			if (++ni === n) {
-				end = i + 1;
-				break;
-			}
-		}
-	}
-	if (end < 0) return null;
+	let best = NEG;
+	for (let j = 0; j < n; j++) if (prev[j] > best) ((best = prev[j]), (end = j));
+	if (end < 0) return [];
 
-	// Backward: pull the start forward to the shortest window ending at `end`.
-	ni = n - 1;
-	let start = 0;
-	for (let i = end - 1; i >= 0; i--) {
-		if (haystack[i] === needle[ni]) {
-			if (ni-- === 0) {
-				start = i;
-				break;
-			}
-		}
+	const out = new Array(m);
+	for (let k = m - 1; k >= 0; k--) {
+		out[k] = end;
+		end = from[k][end];
 	}
-
-	// Score the window.
-	let score = 0;
-	let consecutive = 0;
-	let inGap = false;
-	const positions = [];
-	ni = 0;
-	for (let i = start; i < end; i++) {
-		if (haystack[i] === needle[ni]) {
-			positions.push(i);
-			score += SCORE_MATCH;
-			let bonus = bonusAt(haystack, i);
-			if (consecutive > 0) bonus = Math.max(bonus, BONUS_CONSECUTIVE);
-			if (ni === 0) bonus += BONUS_FIRST_CHAR;
-			score += bonus;
-			consecutive++;
-			inGap = false;
-			ni++;
-		} else {
-			score += inGap ? PENALTY_GAP_EXTEND : PENALTY_GAP_START;
-			inGap = true;
-			consecutive = 0;
-		}
-	}
-	return { score, positions };
+	return out;
 }
 
 /**
@@ -130,19 +226,19 @@ export function match(needle, haystack) {
  * more so that boilerplate tokens like "releases" cannot outrank an exact hit.
  */
 export function scorePort(query, port) {
-	const onHay = match(query, port.haystack);
+	const onHay = score(query, port.haystack);
 	if (onHay === null) return null;
 
-	const onName = match(query, port.name);
-	const onId = match(query, port.id);
+	const onName = score(query, port.name);
+	const onId = score(query, port.id);
 
-	let score = onHay.score;
-	if (onId) score += onId.score;
-	if (onName) score += onName.score * 2;
+	let total = onHay;
+	if (onId !== null) total += onId;
+	if (onName !== null) total += onName * 2;
 	// Shorter ids win ties.
-	score -= port.id.length * 0.1;
+	total -= port.id.length * 0.1;
 
-	return { score, positions: (onId ?? onHay).positions, field: onId ? 'id' : 'haystack' };
+	return { score: total, onId: onId !== null };
 }
 
 /**

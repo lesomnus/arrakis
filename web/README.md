@@ -10,6 +10,7 @@ app.js       page logic
 search.js    fuzzy matcher, shared with the benchmark
 index.json   generated, not committed
 bench/       strategy comparison harness
+tools/       screenshot harness for looking at the page
 ```
 
 ## Generating the index
@@ -58,6 +59,30 @@ Two fields exist purely for search:
 
 `accepts` is ground truth rather than documentation: an arch spelling absent
 from it does not resolve. Note that Windows registers `AMD64`, uppercase.
+
+## Looking at the page
+
+Reading the markup only goes so far. `tools/shot.mjs` drives headless Chromium
+over the states that static review cannot answer.
+
+```sh
+npm install && npx playwright install chromium
+node tools/shot.mjs                    # all scenes -> tools/shots/
+node tools/shot.mjs --only dropdown
+node tools/shot.mjs --url https://lesomnus.github.io/arrakis/
+node tools/shot.mjs --keep             # leave the server up
+```
+
+The scenes are chosen for what is otherwise invisible: whether the theme
+actually flips, whether the styled `<select>` popup renders (Chromium is the
+only engine that lets CSS reach it), whether an unsupported platform reads as
+deliberate rather than broken, and whether the layout survives a phone. Each
+run also fails loudly on console errors, failed requests, and horizontal
+overflow -- that last one is easy to miss in a full-page screenshot and
+impossible to miss on a phone.
+
+Every scene is a plain object in the file; add one rather than clicking through
+by hand.
 
 ## Benchmark
 
@@ -125,6 +150,32 @@ paths have a far sparser character distribution than package names do.
 
 Splitting the payload does not change latency at all -- it is purely a transfer
 win, and a large one: 11.66 MB to 3.86 MB, with a click costing 3.4 KB.
+
+### On the matcher
+
+`search.js` scores a match with a dynamic program over (needle, haystack)
+rather than a single greedy pass, and it is worth knowing why, because the
+greedy version is both simpler and faster.
+
+Greedy takes the leftmost alignment. For `gh` against `github.com/gh` that is
+`g` at 0 and `h` at 3 -- a real subsequence, but it highlights `gith` and
+leaves the exact `gh` at the end unmarked. Correct by the letter, obviously
+wrong to anyone reading the screen. The same thing turned `arks` into
+`arra`k`i`s.
+
+The gap penalty is affine, so the search over previous positions collapses into
+a running maximum and the program stays O(needle x haystack) rather than
+O(needle x haystack^2). It is still several times the cost of one greedy pass;
+the results table above is what that costs.
+
+Positions are computed separately from scores. Scoring runs once per port per
+keystroke, but only the rows actually on screen need their alignment
+backtracked, so `positionsOf` is called a few dozen times rather than tens of
+thousands.
+
+The DP is checked against brute-force enumeration of every alignment on random
+short inputs -- see the note in `score()`. A scoring function that is merely
+plausible is not worth optimizing.
 
 ### Why there is no trigram strategy
 
