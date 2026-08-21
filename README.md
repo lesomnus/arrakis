@@ -10,6 +10,12 @@ $ curl -v https://pkg.opt.td/lesomnus/arrakis/arks@0.0.1/linux/$(uname -m)
 ```
 
 
+Browse the registered ports at
+**[lesomnus.github.io/arrakis](https://lesomnus.github.io/arrakis/)**, or read
+the same data as JSON at
+[`/index.json`](https://lesomnus.github.io/arrakis/index.json). Both are
+regenerated from `port/**` on every push; see [web/](web/README.md).
+
 ## Usage
 
 ### Linux
