@@ -125,9 +125,12 @@ function detail(port) {
 		const opt = new Option(v.v, v.v, false, state.version === v.v);
 		select.append(opt);
 	}
-	if (!port.versions.some((v) => v.v === state.version)) {
-		select.prepend(new Option('pin exact…', '', true, true));
-	}
+	// An alias is selected, so no option in the list is current; show the
+	// placeholder. Otherwise the select holds the selection and should read as
+	// pressed, the same way the alias chips do.
+	const pinned = port.versions.some((v) => v.v === state.version);
+	if (!pinned) select.prepend(new Option('pin exact…', '', true, true));
+	select.dataset.pinned = String(pinned);
 	select.addEventListener('change', () => {
 		if (!select.value) return;
 		state.version = select.value;

@@ -202,9 +202,109 @@ h1 {
 	font-weight: 600;
 }
 
+/*
+ * A select has two halves and they answer differently.
+ *
+ * The closed control is an ordinary element: everything below applies in every
+ * browser. It looked unstyled only because `appearance: auto` asked for the
+ * native widget. `appearance: none` takes it back, at the cost of having to
+ * draw the chevron ourselves.
+ */
 select.chip {
-	appearance: auto;
-	padding: 0.2rem 0.4rem;
+	appearance: none;
+	padding: 0.2rem 1.45rem 0.2rem 0.55rem;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%236b655c' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 0.5rem center;
+	background-size: 0.55rem;
+	line-height: inherit;
+}
+
+select.chip:hover {
+	border-color: var(--accent);
+	color: var(--accent);
+}
+
+/* Matches .chip[aria-pressed="true"]: a version pinned here is as selected as
+   one picked from the alias chips beside it. */
+select.chip[data-pinned="true"] {
+	border-color: var(--accent);
+	background-color: var(--accent-soft);
+	color: var(--accent);
+	font-weight: 600;
+}
+
+select.chip:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 1px;
+}
+
+@media (prefers-color-scheme: dark) {
+	select.chip {
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2397907f' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+	}
+}
+
+/*
+ * The open list is the other half: an OS-native popup that CSS cannot reach at
+ * all. Chromium's customizable select is the one exception, so style the popup
+ * where it exists and leave Firefox, Safari and every mobile browser on their
+ * native picker -- which is the right control on a phone anyway.
+ */
+@supports (appearance: base-select) {
+	select.chip,
+	select.chip::picker(select) {
+		appearance: base-select;
+	}
+
+	select.chip {
+		/* base-select draws its own arrow, so drop ours. */
+		background-image: none;
+		padding: 0.2rem 0.45rem 0.2rem 0.55rem;
+		display: inline-flex;
+		gap: 0.3rem;
+		align-items: center;
+	}
+
+	select.chip::picker-icon {
+		color: var(--muted);
+		font-size: 0.7em;
+		transition: rotate 0.15s ease;
+	}
+
+	select.chip:open::picker-icon {
+		rotate: 180deg;
+	}
+
+	select.chip::picker(select) {
+		border: 1px solid var(--line);
+		border-radius: var(--radius);
+		padding: 0.25rem;
+		background: var(--card);
+		box-shadow: 0 10px 30px rgb(0 0 0 / 0.16);
+	}
+
+	select.chip option {
+		padding: 0.25rem 0.5rem;
+		border-radius: 6px;
+		color: var(--fg);
+		font-family: var(--mono);
+		font-size: 0.8125rem;
+	}
+
+	select.chip option::checkmark {
+		display: none;
+	}
+
+	select.chip option:hover {
+		background: var(--accent-soft);
+		color: var(--accent);
+	}
+
+	select.chip option:checked {
+		color: var(--accent);
+		font-weight: 600;
+	}
 }
 
 .cmd {
