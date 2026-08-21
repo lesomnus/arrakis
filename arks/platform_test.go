@@ -30,9 +30,9 @@ func TestPlatform(t *testing.T) {
 			a, b, c := p.Split()
 			t.Run(fmt.Sprintf("(%s)->%s,%s,%s", p, a, b, c), func(t *testing.T) {
 				x := require.New(t)
-				x.Equal(test[1], a)
-				x.Equal(test[2], b)
-				x.Equal(test[3], c)
+				x.Equal(arks.Os(test[1]), a)
+				x.Equal(arks.Arch(test[2]), b)
+				x.Equal(arks.Variant(test[3]), c)
 			})
 		}
 	})
@@ -130,7 +130,11 @@ func TestPlatform(t *testing.T) {
 			},
 
 			{"darwin/_/",
+				"darwin/x86/",
 				"darwin/x86_64/",
+				"darwin/aarch32/",
+				"darwin/aarch64/",
+				"darwin/amd64/",
 				"darwin/arm64/",
 			},
 		}

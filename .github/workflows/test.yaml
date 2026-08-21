@@ -1,0 +1,46 @@
+name: Test
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - run: go vet ./...
+      - run: go test ./...
+
+      # Ports must resolve before anything downstream reads them.
+      - run: go run . test
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Build index
+        run: go run . render --kind index > ./web/index.json
+
+      # A strategy that returns a different ranking is not a faster strategy.
+      - name: Search strategies agree
+        run: node web/bench/run.mjs --check
