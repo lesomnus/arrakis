@@ -142,6 +142,14 @@ the newest patch is undimmed, since that is the one the series alias resolves
 to. Older patches stay selectable for pinning. A version with no dot opts out of
 grouping rather than becoming a group of one.
 
+The list's dropdown shows the newest three majors, the newest three minors
+within each, and the newest three patches within each of those: at most 27
+entries, and in practice far fewer -- `gh` drops from 21 versions to 3, `go`
+from 17 to 7. It is a menu for picking something to run now, and twenty releases
+make that harder rather than easier. Whatever was left out is named on a
+disabled last line (`+18 more on the port page`) rather than silently dropped;
+the port page carries the complete set, which is where a reference belongs.
+
 Only Chromium can style options inside an open `<select>`, so elsewhere the
 separators show and the dimming does not. The separators carry the structure, so
 that degrades acceptably.

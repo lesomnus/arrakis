@@ -178,7 +178,9 @@ function versionSelect(port) {
 	select.className = 'chip pick';
 	select.setAttribute('aria-label', `version of ${port.id}`);
 
-	fillVersionOptions(select, port, versionOf(port));
+	// The list is for picking something to run now; the port page holds the
+	// complete set.
+	fillVersionOptions(select, port, versionOf(port), { recent: true });
 
 	select.addEventListener('change', () => {
 		pinned.set(port.id, select.value);

@@ -147,6 +147,49 @@ export function seriesOf(value) {
 }
 
 /**
+ * The newest `per` majors, the newest `per` minors within each, and the newest
+ * `per` patches within each of those -- at most per^3 versions.
+ *
+ * The list's dropdown is for picking something to run now, and a port with
+ * twenty releases makes that harder rather than easier. The full set is on the
+ * port page, which is where a complete reference belongs.
+ *
+ * `versions` must be newest first, which is how the index emits them, so first
+ * seen is newest.
+ */
+export function recentVersions(versions, per = 3) {
+	const majors = [];
+	const minors = new Map();
+	const patches = new Map();
+	const out = [];
+
+	for (const v of versions) {
+		const [major = '', minor = ''] = v.v.split('.');
+
+		if (!majors.includes(major)) {
+			if (majors.length >= per) continue;
+			majors.push(major);
+		}
+
+		let seen = minors.get(major);
+		if (!seen) minors.set(major, (seen = []));
+		if (!seen.includes(minor)) {
+			if (seen.length >= per) continue;
+			seen.push(minor);
+		}
+
+		const key = `${major}.${minor}`;
+		const n = patches.get(key) ?? 0;
+		if (n >= per) continue;
+		patches.set(key, n + 1);
+
+		out.push(v);
+	}
+
+	return out;
+}
+
+/**
  * Fill a <select> with a port's aliases and then every exact version, ruled off
  * between series. Within a series only the newest patch is undimmed, because
  * that is the one the series alias resolves to and the one you almost always
@@ -156,8 +199,9 @@ export function seriesOf(value) {
  * separators show and the dimming does not. The separators are the part that
  * carries the structure, so that degrades acceptably.
  */
-export function fillVersionOptions(select, port, current, { placeholder = false, aliases = true } = {}) {
+export function fillVersionOptions(select, port, current, { placeholder = false, aliases = true, recent = false } = {}) {
 	const nodes = [];
+	const versions = recent ? recentVersions(port.versions) : port.versions;
 
 	if (placeholder) {
 		const head = new Option('pin exact…', '');
@@ -169,7 +213,7 @@ export function fillVersionOptions(select, port, current, { placeholder = false,
 	if (nodes.length > 0) nodes.push(document.createElement('hr'));
 
 	let series = undefined;
-	for (const v of port.versions) {
+	for (const v of versions) {
 		const s = seriesOf(v.v);
 		const changed = series !== undefined && s !== series;
 		if (changed && s !== null) nodes.push(document.createElement('hr'));
@@ -180,6 +224,16 @@ export function fillVersionOptions(select, port, current, { placeholder = false,
 		if (s !== null && !changed && series !== undefined) opt.dataset.old = 'true';
 		nodes.push(opt);
 		series = s;
+	}
+
+	// Say what was left out rather than silently truncating. Disabled, because
+	// the way to reach the rest is the port page and this is a label, not a
+	// destination.
+	const hidden = port.versions.length - versions.length;
+	if (hidden > 0) {
+		const note = new Option(`+${hidden} more on the port page`, '');
+		note.disabled = true;
+		nodes.push(document.createElement('hr'), note);
 	}
 
 	select.replaceChildren(...nodes);
