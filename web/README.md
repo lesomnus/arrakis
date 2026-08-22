@@ -121,6 +121,25 @@ impossible to miss on a phone.
 Every scene is a plain object in the file; add one rather than clicking through
 by hand.
 
+`tools/probe.mjs` covers the other half -- behaviour a picture cannot show,
+because it is about what happens *between* two states:
+
+```sh
+node tools/probe.mjs
+node tools/probe.mjs --url https://lesomnus.github.io/arrakis/
+```
+
+It walks the pointer down the list a few pixels at a time and asserts the
+command line only ever moves forward, checks that focus beats hover and that
+tabbing between one row's controls does not leave it, and measures every row's
+geometry before and after interacting to prove nothing moved. Both run in CI.
+
+The pointer walk exists because of a real regression: rows have gaps between
+them, so dragging down the list puts the pointer over the background between
+every pair, and clearing the hover there made the command line snap back to the
+first result and forward again -- 13 changes for 7 rows. It is the kind of fault
+that is obvious in use and invisible in both the code and a screenshot.
+
 ## Benchmark
 
 The real index has 7 ports, which cannot distinguish one strategy from another.

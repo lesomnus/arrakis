@@ -56,6 +56,11 @@ jobs:
         working-directory: web
         run: node tools/shot.mjs
 
+      # Behaviour a screenshot cannot show: what happens between two states.
+      - name: Page behaves
+        working-directory: web
+        run: node tools/probe.mjs
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:

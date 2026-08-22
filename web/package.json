@@ -7,6 +7,7 @@
 		"serve": "python3 -m http.server -d . 8000",
 		"bench": "node bench/run.mjs",
 		"shot": "node tools/shot.mjs",
+		"probe": "node tools/probe.mjs",
 		"check": "node bench/run.mjs --check"
 	},
 	"devDependencies": {

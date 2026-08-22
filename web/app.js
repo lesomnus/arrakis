@@ -33,9 +33,14 @@ const el = {
 /** Which version each port is pinned to, keyed by port id. Survives re-renders. */
 const pinned = new Map();
 /**
- * The row the command line is describing. Focus wins over hover so that keyboard
- * use is not overridden by wherever the pointer happens to rest; with neither,
- * the first result keeps the line populated so it never changes height.
+ * The row the command line is describing.
+ *
+ * Focus wins over hover so that keyboard use is not overridden by wherever the
+ * pointer happens to rest. Hover is sticky: it is set on entering a row and
+ * never cleared on leaving one, because rows have gaps between them and
+ * clearing made the line snap back to the first result every time the pointer
+ * crossed one. With neither, the first result keeps the line populated so it
+ * never changes height.
  */
 let focusedId = null;
 let hoveredId = null;
@@ -59,6 +64,30 @@ async function init() {
 		if (!port) return null;
 		const cmd = commandFor(port, versionOf(port));
 		return cmd.ok ? cmd.text : null;
+	});
+
+	// Delegated to the list, not bound per row: rows are rebuilt on every
+	// keystroke, and `pointerover` bubbling means moving across a gap simply
+	// does not report a new row rather than reporting no row at all.
+	el.results.addEventListener('pointerover', (e) => {
+		const id = e.target.closest?.('.port')?.dataset.id;
+		if (id && id !== hoveredId) {
+			hoveredId = id;
+			drawCommand();
+		}
+	});
+	el.results.addEventListener('focusin', (e) => {
+		const id = e.target.closest?.('.port')?.dataset.id;
+		if (id && id !== focusedId) {
+			focusedId = id;
+			drawCommand();
+		}
+	});
+	el.results.addEventListener('focusout', (e) => {
+		// Moving between the controls of one row is not leaving it.
+		if (e.relatedTarget?.closest?.('.port')) return;
+		focusedId = null;
+		drawCommand();
 	});
 
 	el.q.addEventListener('input', run);
@@ -120,31 +149,6 @@ function row(port, positions) {
 	li.className = 'port';
 	li.dataset.id = port.id;
 	li.dataset.supported = String(supported);
-	li.addEventListener('pointerenter', () => {
-		hoveredId = port.id;
-		drawCommand();
-	});
-	li.addEventListener('pointerleave', () => {
-		if (hoveredId === port.id) hoveredId = null;
-		drawCommand();
-	});
-	li.addEventListener(
-		'focusin',
-		() => {
-			focusedId = port.id;
-			drawCommand();
-		},
-		true,
-	);
-	li.addEventListener(
-		'focusout',
-		() => {
-			if (focusedId === port.id) focusedId = null;
-			drawCommand();
-		},
-		true,
-	);
-
 	// Latest first, then the name, so both columns line up down the list.
 	const ver = document.createElement('span');
 	ver.className = 'ver';
