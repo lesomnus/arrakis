@@ -1,10 +1,10 @@
 import { normalize, positionsOf, scorePort } from './search.js';
 import {
-	aliasesOf,
 	chip,
 	commandFor,
 	defaultVersion,
-	drawCommit,
+	drawBuild,
+	fillVersionOptions,
 	index,
 	label,
 	loadIndex,
@@ -28,19 +28,24 @@ const el = {
 	cmdText: document.getElementById('cmd-text'),
 	cmdCopy: document.getElementById('cmd-copy'),
 	commit: document.getElementById('commit'),
+	built: document.getElementById('built'),
 };
 
 /** Which version each port is pinned to, keyed by port id. Survives re-renders. */
 const pinned = new Map();
 /**
- * The row the command line is describing.
+ * The row the command line is describing: the focused one, else the hovered
+ * one, else none.
  *
- * Focus wins over hover so that keyboard use is not overridden by wherever the
- * pointer happens to rest. Hover is sticky: it is set on entering a row and
- * never cleared on leaving one, because rows have gaps between them and
- * clearing made the line snap back to the first result every time the pointer
- * crossed one. With neither, the first result keeps the line populated so it
- * never changes height.
+ * Hover is sticky *within* the list and cleared on leaving it. Rows have gaps
+ * between them, so clearing per row made the line flick away and back every
+ * time the pointer crossed one; but keeping the last hovered row after the
+ * pointer has gone elsewhere is what made losing focus jump somewhere
+ * unpredictable. The list's own bounds contain the gaps, so it is the right
+ * thing to watch.
+ *
+ * There is no fallback to the first result. A line that describes a row you did
+ * not point at is worse than a line that says nothing.
  */
 let focusedId = null;
 let hoveredId = null;
@@ -49,7 +54,7 @@ let shown = [];
 init();
 
 async function init() {
-	drawCommit(el.commit);
+	drawBuild(el.commit, el.built);
 
 	try {
 		await loadIndex();
@@ -75,6 +80,10 @@ async function init() {
 			hoveredId = id;
 			drawCommand();
 		}
+	});
+	el.results.addEventListener('pointerleave', () => {
+		hoveredId = null;
+		drawCommand();
 	});
 	el.results.addEventListener('focusin', (e) => {
 		const id = e.target.closest?.('.port')?.dataset.id;
@@ -169,9 +178,7 @@ function versionSelect(port) {
 	select.className = 'chip pick';
 	select.setAttribute('aria-label', `version of ${port.id}`);
 
-	for (const alias of aliasesOf(port, 3)) select.append(new Option(alias, alias));
-	for (const v of port.versions) select.append(new Option(v.v, v.v));
-	select.value = versionOf(port);
+	fillVersionOptions(select, port, versionOf(port));
 
 	select.addEventListener('change', () => {
 		pinned.set(port.id, select.value);
@@ -203,15 +210,14 @@ function versionOf(port) {
 
 function activePort() {
 	const id = focusedId ?? hoveredId;
-	if (id) return shown.find((p) => p.id === id) ?? null;
-	return shown[0] ?? null;
+	return id ? (shown.find((p) => p.id === id) ?? null) : null;
 }
 
 function drawCommand() {
 	const port = activePort();
 	if (!port) {
 		el.cmd.dataset.state = 'empty';
-		el.cmdText.textContent = 'no port selected';
+		el.cmdText.textContent = shown.length > 0 ? 'point at a port for its command' : 'nothing to show';
 		el.cmdCopy.disabled = true;
 		return;
 	}

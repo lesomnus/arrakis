@@ -4,7 +4,8 @@ import {
 	chip,
 	commandFor,
 	defaultVersion,
-	drawCommit,
+	drawBuild,
+	fillVersionOptions,
 	label,
 	loadIndex,
 	OS_LOGO,
@@ -33,6 +34,7 @@ const el = {
 	platforms: document.querySelector('#d-platforms tbody'),
 	versions: document.querySelector('#d-versions tbody'),
 	commit: document.getElementById('commit'),
+	built: document.getElementById('built'),
 };
 
 let port = null;
@@ -41,7 +43,7 @@ let version = '';
 init();
 
 async function init() {
-	drawCommit(el.commit);
+	drawBuild(el.commit, el.built);
 
 	const id = (new URLSearchParams(location.search).get('id') ?? '').toLowerCase();
 	try {
@@ -85,14 +87,12 @@ function drawVersionPicker() {
 
 	const nodes = tags.slice(0, 8).map((t) => chip(t, version === t, () => set(t)));
 
+	// Aliases already have chips beside this, so the select is exact versions
+	// only, ruled off between series.
 	const select = document.createElement('select');
 	select.className = 'chip pick';
 	select.setAttribute('aria-label', 'exact version');
-	const head = new Option('pin exact…', '');
-	head.disabled = true;
-	select.append(head);
-	for (const v of port.versions) select.append(new Option(v.v, v.v));
-	select.value = port.versions.some((v) => v.v === version) ? version : '';
+	fillVersionOptions(select, port, version, { placeholder: true, aliases: false });
 	select.addEventListener('change', () => select.value && set(select.value));
 	nodes.push(select);
 

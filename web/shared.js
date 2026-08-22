@@ -133,6 +133,63 @@ export function aliasesOf(port, limit = 6) {
 	return out.slice(0, limit);
 }
 
+/**
+ * The version with its last dot-segment removed: "2.97.0" -> "2.97", "35.1" ->
+ * "35". Null when there is no dot to remove, which is how a version that is not
+ * semver-shaped opts out of grouping.
+ *
+ * This is the same "series" the alias generator uses, so the grouping the page
+ * shows matches the tags the port actually publishes.
+ */
+export function seriesOf(value) {
+	const i = value.lastIndexOf('.');
+	return i < 0 ? null : value.slice(0, i);
+}
+
+/**
+ * Fill a <select> with a port's aliases and then every exact version, ruled off
+ * between series. Within a series only the newest patch is undimmed, because
+ * that is the one the series alias resolves to and the one you almost always
+ * want; the older patches stay selectable for pinning.
+ *
+ * Only Chromium can style the options inside an open picker, so elsewhere the
+ * separators show and the dimming does not. The separators are the part that
+ * carries the structure, so that degrades acceptably.
+ */
+export function fillVersionOptions(select, port, current, { placeholder = false, aliases = true } = {}) {
+	const nodes = [];
+
+	if (placeholder) {
+		const head = new Option('pin exact…', '');
+		head.disabled = true;
+		nodes.push(head);
+	}
+
+	if (aliases) for (const a of aliasesOf(port, 3)) nodes.push(new Option(a, a));
+	if (nodes.length > 0) nodes.push(document.createElement('hr'));
+
+	let series = undefined;
+	for (const v of port.versions) {
+		const s = seriesOf(v.v);
+		const changed = series !== undefined && s !== series;
+		if (changed && s !== null) nodes.push(document.createElement('hr'));
+
+		const opt = new Option(v.v, v.v);
+		// Newest of its series when the series just changed, or when there is no
+		// series to speak of.
+		if (s !== null && !changed && series !== undefined) opt.dataset.old = 'true';
+		nodes.push(opt);
+		series = s;
+	}
+
+	select.replaceChildren(...nodes);
+	select.value = current;
+	// A value that is not in the list leaves the select on its first entry;
+	// with a placeholder that is the right thing, without one fall back.
+	if (select.value !== current && !placeholder) select.value = defaultVersion(port);
+	return select;
+}
+
 export function defaultVersion(port) {
 	return port.latest ? 'latest' : port.versions[0].v;
 }
@@ -198,21 +255,22 @@ export function wireCopy(button, textOf) {
 	});
 }
 
-/** Footer: the commit this build came from, linked to it. */
-export function drawCommit(node) {
+/**
+ * Footer: the commit this build came from and when it was built. Only the Pages
+ * build stamps these in, so serving the files directly simply leaves them out.
+ */
+export function drawBuild(commit, built) {
 	const sha = document.documentElement.dataset.sha;
-	// Only the Pages build stamps this in; serving the files directly leaves it
-	// unset, and a separator with nothing after it is worse than no footer.
-	if (!sha) return;
+	if (sha) {
+		commit.href = `${REPO}/commit/${sha}`;
+		commit.rel = 'noreferrer';
+		commit.append(svg(GITHUB_LOGO, 'mark'), Object.assign(document.createElement('code'), { textContent: sha }));
+		commit.hidden = false;
+	}
 
-	const sep = node.previousElementSibling;
-	if (sep?.classList.contains('sep')) sep.hidden = false;
-
-	node.href = `${REPO}/commit/${sha}`;
-	node.rel = 'noreferrer';
-	node.append(svg(GITHUB_LOGO, 'mark'), Object.assign(document.createElement('code'), { textContent: sha }));
-
-	const date = document.documentElement.dataset.date;
-	if (date) node.title = `built ${date}`;
-	node.hidden = false;
+	const at = document.documentElement.dataset.built;
+	if (at && built) {
+		built.textContent = at;
+		built.hidden = false;
+	}
 }

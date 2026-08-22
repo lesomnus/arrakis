@@ -49,10 +49,13 @@ console.log('pointer walking down the list');
 		if (seen.at(-1) !== port) seen.push(port);
 	}
 
+	// Empty before entering the list and after leaving it; in between, each row
+	// exactly once and in order.
 	const order = rows.map((r) => r.id);
-	const backwards = seen.filter((p, i) => i > 0 && order.indexOf(p) <= order.indexOf(seen[i - 1]));
-	check('the command line only ever moves down', backwards.length === 0, `snapped back to ${backwards.join(', ')}`);
-	check('every row is reported once', seen.length === rows.length, `${seen.length} changes for ${rows.length} rows`);
+	const inside = seen.filter((p) => p !== null);
+	check('every row is reported once, in order', inside.join() === order.join(), `saw ${inside.join(' > ')}`);
+	check('the line is empty until the pointer reaches the list', seen[0] === null);
+	check('the line empties again once the pointer leaves', seen.at(-1) === null);
 }
 
 // --- focus beats hover -------------------------------------------------------
@@ -69,7 +72,19 @@ console.log('\nfocus and hover');
 	check('moving between a row\'s own controls keeps it', (await commandPort()) === rows[2].id, `showed ${await commandPort()}`);
 
 	await page.locator('#q').focus();
-	check('leaving the list falls back to the hovered row', (await commandPort()) === rows[5].id, `showed ${await commandPort()}`);
+	check('losing focus while still hovering shows the hovered row', (await commandPort()) === rows[5].id, `showed ${await commandPort()}`);
+
+	// The complaint this replaced: click a row, move the pointer away, click
+	// elsewhere, and the line jumped to whatever row you last happened to cross.
+	await page.locator('.port').nth(1).locator('select').click();
+	await page.keyboard.press('Escape');
+	check('clicking a row selects it', (await commandPort()) === rows[1].id, `showed ${await commandPort()}`);
+
+	await page.mouse.move(20, 20);
+	check('moving off the list while focused keeps the focused row', (await commandPort()) === rows[1].id, `showed ${await commandPort()}`);
+
+	await page.locator('#q').focus();
+	check('losing focus away from the list shows nothing', (await commandPort()) === null, `showed ${await commandPort()}`);
 }
 
 // --- the list must not move when you interact with it ------------------------
@@ -79,6 +94,7 @@ console.log('\nfocus and hover');
 console.log('\nstability');
 {
 	const geometry = () => page.$$eval('.port', (ns) => ns.map((n) => `${n.getBoundingClientRect().y}:${n.getBoundingClientRect().height}`).join('|'));
+	await page.locator('.port').nth(0).hover();
 	const before = await geometry();
 
 	for (const i of [0, 3, 6, 1]) await page.locator('.port').nth(i).hover();

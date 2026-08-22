@@ -34,10 +34,10 @@ jobs:
 
       - name: Stamp build
         run: |
-          date="$(git log -1 --format=%cs)"
+          built="$(date -u '+%Y-%m-%d %H:%M UTC')"
           sha="$(git rev-parse --short HEAD)"
           for f in ./web/index.html ./web/port.html; do
-            sed -i "s|<html lang=\"en\">|<html lang=\"en\" data-date=\"${date}\" data-sha=\"${sha}\">|" "$f"
+            sed -i "s|<html lang=\"en\">|<html lang=\"en\" data-built=\"${built}\" data-sha=\"${sha}\">|" "$f"
             grep -q 'data-sha' "$f"
           done
 

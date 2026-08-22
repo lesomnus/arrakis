@@ -105,6 +105,17 @@ const SCENES = [
 	},
 	{ name: 'detail-phone', theme: 'light', viewport: PHONE, full: true, path: 'port.html?id=protocolbuffers%2Fprotobuf%2Fprotoc' },
 	{
+		// The footer is drawn from attributes only the Pages build stamps in, so
+		// nothing local would otherwise exercise it. Fake the stamp.
+		name: 'footer',
+		theme: 'light',
+		viewport: DESKTOP,
+		stamp: { sha: 'abc1234', built: '2026-08-22 06:14 UTC' },
+		async act(page) {
+			await page.locator('footer').scrollIntoViewIfNeeded();
+		},
+	},
+	{
 		name: 'phone',
 		theme: 'light',
 		viewport: PHONE,
@@ -140,6 +151,21 @@ for (const scene of wanted) {
 	page.on('console', (m) => m.type() === 'error' && problems.push(`console: ${m.text()}`));
 	page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}`));
 	page.on('requestfailed', (r) => problems.push(`requestfailed: ${r.url()}`));
+
+	if (scene.stamp) {
+		// Rewrite the html tag the same way the Pages workflow does, rather than
+		// patching the DOM afterwards -- that way this exercises the real path.
+		await page.route('**/*.html', async (route) => {
+			const res = await route.fetch();
+			const body = (await res.text()).replace('<html lang="en">', `<html lang="en" data-built="${scene.stamp.built}" data-sha="${scene.stamp.sha}">`);
+			await route.fulfill({ response: res, body });
+		});
+		await page.route(new RegExp(`^${base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`), async (route) => {
+			const res = await route.fetch();
+			const body = (await res.text()).replace('<html lang="en">', `<html lang="en" data-built="${scene.stamp.built}" data-sha="${scene.stamp.sha}">`);
+			await route.fulfill({ response: res, body });
+		});
+	}
 
 	await page.goto(new URL(scene.path ?? '', base).href, { waitUntil: 'networkidle' });
 	await page.waitForSelector(scene.path ? 'main:not([hidden])' : '.port', { timeout: 5000 });

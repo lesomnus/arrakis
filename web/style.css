@@ -303,8 +303,15 @@ code {
 	background: var(--card);
 }
 
+/*
+ * The active row already announces itself through the command line above, and
+ * whatever is focused inside it draws its own ring. A full accent border on top
+ * of both was three things shouting at once, so this is a tint and a barely
+ * warmed border -- enough to find the row, not enough to compete.
+ */
 .port[data-active="true"] {
-	border-color: var(--accent);
+	border-color: color-mix(in srgb, var(--accent) 30%, var(--line));
+	background: color-mix(in srgb, var(--accent-soft) 45%, var(--card));
 }
 
 .ver {
@@ -349,13 +356,11 @@ a.id:focus-visible {
 
 a.id:focus-visible {
 	outline: 2px solid var(--accent);
-	outline-offset: 2px;
-	border-radius: 3px;
+	outline-offset: 3px;
+	border-radius: 2px;
 }
 
-footer .sep[hidden] {
-	display: none;
-}
+
 
 .id mark {
 	padding: 0;
@@ -557,6 +562,41 @@ select.chip:focus-visible {
 		background: none;
 		color: var(--muted);
 	}
+
+	/*
+	 * Older patches of a series. The newest is the one the series alias resolves
+	 * to and almost always the one you want; the rest stay selectable for
+	 * pinning but stop competing for attention.
+	 */
+	select.chip option[data-old="true"] {
+		color: var(--muted);
+	}
+
+	select.chip option[data-old="true"]:hover,
+	select.chip option[data-old="true"]:checked {
+		color: var(--accent);
+	}
+
+	/* Rules off one series from the next. */
+	select.chip hr {
+		margin: 0.25rem 0.3rem;
+		border: 0;
+		border-top: 1px solid var(--line);
+	}
+
+	/*
+	 * The standard scrollbar properties rather than the ::-webkit-scrollbar
+	 * pseudo-elements: Chrome ignores those once scrollbar-color is set, and
+	 * chaining them after ::picker() is not something the selector grammar
+	 * allows anyway.
+	 *
+	 * Unverified by tools/shot.mjs -- headless Chromium draws no scrollbar at
+	 * all, styled or not, so this one needs a real browser to check.
+	 */
+	select.chip::picker(select) {
+		scrollbar-width: thin;
+		scrollbar-color: color-mix(in srgb, var(--muted) 55%, var(--card)) transparent;
+	}
 }
 
 /* ---- footer --------------------------------------------------------------- */
@@ -577,6 +617,19 @@ footer a {
 
 footer a:hover {
 	color: var(--accent);
+}
+
+/* A separator before every visible part that has a visible part before it, so
+   a piece the build did not stamp in takes its separator with it. */
+footer > *:not([hidden]) ~ *:not([hidden])::before {
+	content: "·";
+	margin-right: 0.4rem;
+	color: var(--line);
+}
+
+.built {
+	font-family: var(--mono);
+	font-size: 0.75rem;
 }
 
 .commit {

@@ -134,6 +134,27 @@ command line only ever moves forward, checks that focus beats hover and that
 tabbing between one row's controls does not leave it, and measures every row's
 geometry before and after interacting to prove nothing moved. Both run in CI.
 
+### The version dropdown
+
+Versions are ruled off between series -- the version with its last dot-segment
+removed, the same grouping the alias generator uses -- and within a series only
+the newest patch is undimmed, since that is the one the series alias resolves
+to. Older patches stay selectable for pinning. A version with no dot opts out of
+grouping rather than becoming a group of one.
+
+Only Chromium can style options inside an open `<select>`, so elsewhere the
+separators show and the dimming does not. The separators carry the structure, so
+that degrades acceptably.
+
+The picker's scrollbar is styled with `scrollbar-width` / `scrollbar-color`
+rather than the `::-webkit-scrollbar` pseudo-elements: Chrome ignores those once
+`scrollbar-color` is set, and chaining them after `::picker()` is not something
+the selector grammar allows. **This is the one thing `tools/shot.mjs` cannot
+check** -- headless Chromium draws no scrollbar at all, styled or not, so it
+needs a real browser.
+
+### Why the probe exists
+
 The pointer walk exists because of a real regression: rows have gaps between
 them, so dragging down the list puts the pointer over the background between
 every pair, and clearing the hover there made the command line snap back to the
