@@ -20,6 +20,11 @@ type App struct {
 
 	Platforms PlatformMap
 	Versions  []Version
+
+	// Dir is the app's directory, relative to the port root.
+	Dir string
+	// Source is the discovery config from "source.yaml", nil when there is none.
+	Source *Source
 }
 
 var templateFuncs = template.FuncMap{
@@ -56,8 +61,17 @@ func ReadAppFromFs(fs fs.FS, p string) ([]App, error) {
 		if app.Name == "" {
 			app.Name = filepath.Base(p)
 		}
+		app.Dir = p
 
 		apps = append(apps, app)
+	}
+
+	source, err := ReadSourceFromFs(fs, p)
+	if err != nil {
+		return nil, fmt.Errorf("read source: %w", err)
+	}
+	for i := range apps {
+		apps[i].Source = source
 	}
 
 	f, err = fs.Open(filepath.Join(p, "versions"))

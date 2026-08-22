@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>arrakis &mdash; port</title>
+		<link rel="stylesheet" href="./style.css" />
+	</head>
+	<body>
+		<header>
+			<p class="crumb"><a href="./">&larr; arrakis</a></p>
+			<h1 id="title">&hellip;</h1>
+			<p class="tagline" id="subtitle"></p>
+		</header>
+
+		<main id="detail" hidden>
+			<section>
+				<h2>Download</h2>
+				<div class="row">
+					<label id="d-version-label">version</label>
+					<span id="d-version" role="group" aria-labelledby="d-version-label"></span>
+				</div>
+				<div class="row">
+					<label id="d-platform-label">platform</label>
+					<span id="d-platform" role="group" aria-labelledby="d-platform-label"></span>
+				</div>
+				<div class="cmd">
+					<code id="d-cmd"></code>
+					<button type="button" id="d-copy">copy</button>
+				</div>
+				<p class="stat" id="d-accepts"></p>
+			</section>
+
+			<section>
+				<h2>Source</h2>
+				<dl id="d-source"></dl>
+			</section>
+
+			<section>
+				<h2>Platforms</h2>
+				<table id="d-platforms">
+					<thead>
+						<tr><th>os</th><th>arch</th><th>also accepts</th></tr>
+					</thead>
+					<tbody></tbody>
+				</table>
+			</section>
+
+			<section>
+				<h2>Versions</h2>
+				<table id="d-versions">
+					<thead>
+						<tr><th>version</th><th>aliases</th></tr>
+					</thead>
+					<tbody></tbody>
+				</table>
+			</section>
+		</main>
+
+		<p id="missing" class="empty" hidden>No such port.</p>
+
+		<footer>
+			<a href="./index.json">index.json</a>
+			<span class="sep" aria-hidden="true" hidden>&middot;</span>
+			<a id="commit" class="commit" hidden></a>
+		</footer>
+
+		<script type="module" src="./port.js"></script>
+	</body>
+</html>

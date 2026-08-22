@@ -4,14 +4,33 @@ Static port index for GitHub Pages. No build step, no dependencies -- the page
 is plain ES modules loading a generated JSON file.
 
 ```
-index.html   page shell
-style.css
-app.js       page logic
+index.html   the list
+app.js
+port.html    one port in full
+port.js
+shared.js    index loading, platform choice, command, logos
 search.js    fuzzy matcher, shared with the benchmark
+style.css
 index.json   generated, not committed
 bench/       strategy comparison harness
 tools/       screenshot harness for looking at the page
 ```
+
+## The two pages
+
+**The list** answers one question -- what is the command for this port on my
+platform -- and is built so that answering it never moves anything. Rows are a
+grid with identical track sizes, so the version, the name and the two controls
+line up all the way down. Nothing expands: the command line lives under the
+platform picker and rewrites itself to follow whichever row has focus, or is
+hovered when nothing has focus, or the first result when neither. Pointing at a
+different port changes one line of text and nothing else.
+
+**The port page** (`port.html?id=<port>`) is where everything the list leaves
+out goes: which upstream source the versions are discovered from and how, the
+full version table with its aliases, every platform with the arch spellings that
+resolve, and a link to the port's files. A query parameter rather than a
+generated file per port, so it costs nothing to add ports.
 
 ## Generating the index
 
@@ -32,13 +51,23 @@ over and over. Versions and platforms are what you pick *after* choosing a port.
 
 ```json
 {
-  "schema": 1,
+  "schema": 2,
   "ports": [
     {
       "id": "github.com/gh",
       "path": "github.com",
       "name": "gh",
       "target": "github.com/cli/cli/releases/download/",
+      "dir": "github.com/cli/gh",
+      "source": {
+        "kind": "github",
+        "repo": "cli/cli",
+        "match": "^v?(.+)$",
+        "prerelease": false,
+        "limit": 20,
+        "series": true,
+        "latest": true
+      },
       "latest": "2.97.0",
       "versions": [{ "v": "2.97.0", "aliases": ["2.97", "latest"] }],
       "platforms": [{ "os": "linux", "arch": "amd64", "accepts": ["amd64", "x86_64"] }],
@@ -47,6 +76,14 @@ over and over. Versions and platforms are what you pick *after* choosing a port.
   ]
 }
 ```
+
+`source` mirrors the port's `source.yaml` **with the defaults already applied**,
+so the page shows what will actually happen rather than what the file happens to
+spell out -- `match` is filled in even when the file omits it. It is absent for
+ports whose versions are added by hand. `dir` is relative to the port root, so
+the page prefixes `port/` to link back to the files.
+
+Nothing in the search path reads either field; they exist for the port page.
 
 Two fields exist purely for search:
 

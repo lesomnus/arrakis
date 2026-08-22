@@ -95,8 +95,10 @@ func (c Config) Build(app App) (iter.Seq2[[]Item, error], error) {
 		}
 
 		v := Item{
-			Path: c.Path,
-			Name: app.Name,
+			Path:   c.Path,
+			Name:   app.Name,
+			Dir:    app.Dir,
+			Source: app.Source,
 		}
 		for _, version := range app.Versions {
 			v.Version = version

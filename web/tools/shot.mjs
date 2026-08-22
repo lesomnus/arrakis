@@ -32,23 +32,45 @@ const SCENES = [
 	{ name: 'home-light', theme: 'light', viewport: DESKTOP, full: true },
 	{ name: 'home-dark', theme: 'dark', viewport: DESKTOP, full: true },
 	{
-		name: 'expanded-light',
+		// Searching: the highlight must land on the characters a reader expects.
+		name: 'search',
 		theme: 'light',
 		viewport: DESKTOP,
 		full: true,
 		async act(page) {
 			await search(page, 'gh');
-			await page.locator('.port > button').first().click();
 		},
 	},
 	{
-		name: 'expanded-dark',
+		// The command line follows focus first, hover second. Tab to a row and
+		// check it tracks the keyboard rather than wherever the pointer rests.
+		name: 'focused',
+		theme: 'light',
+		viewport: DESKTOP,
+		full: true,
+		async act(page) {
+			await page.locator('.port').nth(3).locator('a.id').focus();
+		},
+	},
+	{
+		name: 'hovered',
 		theme: 'dark',
 		viewport: DESKTOP,
 		full: true,
 		async act(page) {
-			await search(page, 'gh');
-			await page.locator('.port > button').first().click();
+			await page.locator('.port').nth(2).hover();
+		},
+	},
+	{
+		// A row whose port has no build for the chosen platform: no version
+		// badge fill, dimmed name, copy disabled, and the reason on the line.
+		name: 'unsupported',
+		theme: 'light',
+		viewport: DESKTOP,
+		full: true,
+		async act(page) {
+			await page.locator('#os .chip', { hasText: 'windows' }).click();
+			await page.locator('.port', { hasText: 'arks' }).hover();
 		},
 	},
 	{
@@ -58,9 +80,7 @@ const SCENES = [
 		theme: 'light',
 		viewport: DESKTOP,
 		async act(page) {
-			await search(page, 'gh');
-			await page.locator('.port > button').first().click();
-			await page.locator('.detail select').click();
+			await page.locator('.port', { hasText: 'github.com/gh' }).locator('select').click();
 			await page.waitForTimeout(250);
 		},
 	},
@@ -69,25 +89,21 @@ const SCENES = [
 		theme: 'dark',
 		viewport: DESKTOP,
 		async act(page) {
-			await search(page, 'gh');
-			await page.locator('.port > button').first().click();
-			await page.locator('.detail select').click();
+			await page.locator('.port', { hasText: 'github.com/gh' }).locator('select').click();
 			await page.waitForTimeout(250);
 		},
 	},
+	{ name: 'detail-light', theme: 'light', viewport: DESKTOP, full: true, path: 'port.html?id=github.com%2Fgh' },
+	{ name: 'detail-dark', theme: 'dark', viewport: DESKTOP, full: true, path: 'port.html?id=golang%2Fgo' },
 	{
-		// A port with no build for the chosen platform: nothing selected, copy
-		// disabled. Should read as an answer, not as a failure.
-		name: 'unsupported',
+		// A port with no source.yaml: the page must say so rather than show gaps.
+		name: 'detail-handwritten',
 		theme: 'light',
 		viewport: DESKTOP,
 		full: true,
-		async act(page) {
-			await page.locator('#os .chip', { hasText: 'windows' }).click();
-			await search(page, 'arks');
-			await page.locator('.port > button').first().click();
-		},
+		path: 'port.html?id=claude.ai%2Fcode',
 	},
+	{ name: 'detail-phone', theme: 'light', viewport: PHONE, full: true, path: 'port.html?id=protocolbuffers%2Fprotobuf%2Fprotoc' },
 	{
 		name: 'phone',
 		theme: 'light',
@@ -95,7 +111,6 @@ const SCENES = [
 		full: true,
 		async act(page) {
 			await search(page, 'go');
-			await page.locator('.port > button').first().click();
 		},
 	},
 ];
@@ -126,8 +141,8 @@ for (const scene of wanted) {
 	page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}`));
 	page.on('requestfailed', (r) => problems.push(`requestfailed: ${r.url()}`));
 
-	await page.goto(base, { waitUntil: 'networkidle' });
-	await page.waitForSelector('.port', { timeout: 5000 });
+	await page.goto(new URL(scene.path ?? '', base).href, { waitUntil: 'networkidle' });
+	await page.waitForSelector(scene.path ? 'main:not([hidden])' : '.port', { timeout: 5000 });
 	if (scene.act) await scene.act(page);
 
 	// Horizontal overflow is invisible in a full-page screenshot but very

@@ -13,6 +13,12 @@ type Item struct {
 
 	Origin string
 	Target string
+
+	// Dir and Source describe the port this item came from. They are constant
+	// across every item of an app; renderers that aggregate back to the port
+	// level need them, and the rest ignore them.
+	Dir    string
+	Source *Source
 }
 
 func ParseItem(s string) (Item, error) {

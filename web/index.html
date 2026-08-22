@@ -40,6 +40,16 @@
 					<label id="arch-label">arch</label>
 					<span id="arch" role="group" aria-labelledby="arch-label"></span>
 				</div>
+
+				<!--
+					The command for whichever row is focused, or hovered when nothing is
+					focused. It lives here rather than inside a row so that pointing at a
+					different port rewrites one line instead of moving the page.
+				-->
+				<div class="cmd" id="cmd">
+					<code id="cmd-text"></code>
+					<button type="button" id="cmd-copy">copy</button>
+				</div>
 			</div>
 
 			<ul id="results" class="results"></ul>
@@ -47,10 +57,9 @@
 		</main>
 
 		<footer>
-			<a href="https://github.com/lesomnus/arrakis">source</a>
-			<span aria-hidden="true">&middot;</span>
 			<a href="./index.json">index.json</a>
-			<span id="build" hidden></span>
+			<span class="sep" aria-hidden="true" hidden>&middot;</span>
+			<a id="commit" class="commit" hidden></a>
 		</footer>
 
 		<script type="module" src="./app.js"></script>

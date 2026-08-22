@@ -34,9 +34,12 @@ jobs:
 
       - name: Stamp build
         run: |
-          stamp="$(git log -1 --format=%cs) · $(git rev-parse --short HEAD)"
-          sed -i "s|<html lang=\"en\">|<html lang=\"en\" data-build=\"${stamp}\">|" ./web/index.html
-          grep -q 'data-build' ./web/index.html
+          date="$(git log -1 --format=%cs)"
+          sha="$(git rev-parse --short HEAD)"
+          for f in ./web/index.html ./web/port.html; do
+            sed -i "s|<html lang=\"en\">|<html lang=\"en\" data-date=\"${date}\" data-sha=\"${sha}\">|" "$f"
+            grep -q 'data-sha' "$f"
+          done
 
       - uses: actions/upload-pages-artifact@v4
         with:

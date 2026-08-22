@@ -10,7 +10,7 @@ import (
 
 // IndexSchema is the version of the index document format.
 // Bump it on any breaking change to the shape emitted by [IndexRenderer].
-const IndexSchema = 1
+const IndexSchema = 2
 
 // IndexDoc is the root of the generated index document.
 type IndexDoc struct {
@@ -28,6 +28,13 @@ type IndexPort struct {
 	// It is included because the upstream repository is often not derivable
 	// from Id, e.g. "protoc" lives in "protocolbuffers/protobuf".
 	Target string `json:"target"`
+	// Dir is the port's directory relative to the port root, so the site can
+	// link back to the files this record was generated from.
+	Dir string `json:"dir,omitempty"`
+	// Source is how new versions are discovered, absent when they are added by
+	// hand. Nothing in the search path uses it; it is what the detail page is
+	// for.
+	Source *IndexSource `json:"source,omitempty"`
 	// Latest is the version value that the "latest" alias resolves to, if any.
 	Latest    string          `json:"latest,omitempty"`
 	Versions  []IndexVersion  `json:"versions"`
@@ -35,6 +42,19 @@ type IndexPort struct {
 	// Haystack is a pre-lowercased, pre-joined search string.
 	// Clients match against this instead of rebuilding it per keystroke.
 	Haystack string `json:"haystack"`
+}
+
+// IndexSource mirrors [Source] with the defaults already applied, so the page
+// shows what will actually happen rather than what the file happens to spell out.
+type IndexSource struct {
+	Kind       string `json:"kind"`
+	Repo       string `json:"repo,omitempty"`
+	Url        string `json:"url,omitempty"`
+	Match      string `json:"match,omitempty"`
+	Prerelease bool   `json:"prerelease"`
+	Limit      int    `json:"limit,omitempty"`
+	Series     bool   `json:"series"`
+	Latest     bool   `json:"latest"`
 }
 
 type IndexVersion struct {
@@ -83,6 +103,8 @@ func (p *IndexRenderer) Render(c Config, v Item) error {
 				Path:   v.Path,
 				Name:   v.Name,
 				Target: c.Target.Path + c.Target.Suffix,
+				Dir:    v.Dir,
+				Source: indexSourceOf(v.Source),
 			},
 			versions:  map[string]*IndexVersion{},
 			platforms: map[string][]string{},
@@ -172,6 +194,29 @@ func (p *IndexRenderer) Flush() error {
 	e := json.NewEncoder(p.w)
 	e.SetIndent("", "  ")
 	return e.Encode(doc)
+}
+
+func indexSourceOf(s *Source) *IndexSource {
+	if s == nil {
+		return nil
+	}
+
+	// refine() falls back to this when source.yaml omits it.
+	match := s.Match
+	if match == "" {
+		match = `^v?(.+)$`
+	}
+
+	return &IndexSource{
+		Kind:       string(s.Kind),
+		Repo:       s.Repo,
+		Url:        s.Url,
+		Match:      match,
+		Prerelease: s.Prerelease,
+		Limit:      s.Limit,
+		Series:     s.Alias.series(),
+		Latest:     s.Alias.latest(),
+	}
 }
 
 // buildHaystack denormalizes everything a user might type into one lowercase
