@@ -1,0 +1,11 @@
+path: v{{.Version}}/oras_{{.Version}}_{{.Os}}_{{.Arch}}.tar.gz
+platforms:
+  linux/_amd64/: linux/amd64/
+  linux/_arm64/: linux/arm64/
+  darwin/_amd64/: darwin/amd64/
+  darwin/_arm64/: darwin/arm64/
+---
+# Only amd64 is published for Windows.
+path: v{{.Version}}/oras_{{.Version}}_{{.Os}}_{{.Arch}}.zip
+platforms:
+  windows/_amd64/: windows/amd64/

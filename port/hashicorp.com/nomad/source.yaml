@@ -1,0 +1,9 @@
+# Not the releases API terraform uses: that endpoint caps at limit=20 and
+# returns mostly Enterprise builds, so an OSS release can fall out of the window
+# before a bump run sees it. The directory index lists every version.
+kind: http
+url: https://releases.hashicorp.com/nomad/
+# Anchored on the closing "<" so the "+ent", "+ent.musl" and "+ent.fips1403"
+# variants are rejected rather than published as if they were the OSS build.
+match: 'nomad_([0-9]+\.[0-9]+\.[0-9]+)<'
+limit: 10

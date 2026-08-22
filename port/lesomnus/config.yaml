@@ -1,0 +1,6 @@
+# arrakis has no domain of its own to be named after -- pkg.opt.td is the
+# service it runs, not a vendor identity -- so the fallback applies and the
+# port is named after who publishes it and what the tool is called.
+target:
+  path: github.com/lesomnus/arrakis
+  suffix: /releases/download/

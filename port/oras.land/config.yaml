@@ -1,0 +1,5 @@
+# The path is the project's own domain; the target is wherever the binaries
+# actually live, which for ORAS is GitHub releases.
+target:
+  path: github.com/oras-project/oras
+  suffix: /releases/download/

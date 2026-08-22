@@ -1,0 +1,6 @@
+# astral.sh is uv's vendor domain -- it is what `astral.sh/uv/install.sh`
+# redirects from. The binaries themselves are only on GitHub releases;
+# releases.astral.sh serves the installer script and nothing versioned.
+target:
+  path: github.com/astral-sh/uv
+  suffix: /releases/download/
