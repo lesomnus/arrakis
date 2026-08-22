@@ -1,0 +1,6 @@
+kind: github
+repo: astral-sh/uv
+# Tags have no "v" prefix, so the default ^v?(.+)$ would work; spelled out to
+# reject anything that is not a plain three-part version.
+match: '^([0-9]+\.[0-9]+\.[0-9]+)$'
+limit: 15

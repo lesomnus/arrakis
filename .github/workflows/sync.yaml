@@ -19,7 +19,17 @@ jobs:
 
       - name: Get arks
         run: |
-          curl -o _arks -sSL https://pkg.opt.td/lesomnus/arrakis/arks@latest/linux/$(uname -m)
+          # Straight from GitHub releases rather than through pkg.opt.td. This
+          # job publishes the redirect table, so it must not need the table to
+          # already hold a working entry for itself: otherwise renaming the port
+          # breaks the run that would have published the new name, and a wiped
+          # KV could never be repopulated.
+          case "$(uname -m)" in
+            x86_64) arch=amd64 ;;
+            aarch64) arch=arm64 ;;
+            *) echo "unsupported machine: $(uname -m)" >&2; exit 1 ;;
+          esac
+          curl -o _arks -fsSL "https://github.com/lesomnus/arrakis/releases/latest/download/arks-linux-${arch}"
           chmod +x _arks
           ./_arks version
 

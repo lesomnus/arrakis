@@ -1,0 +1,15 @@
+# Tags carry the version but the assets do not, so the template repeats neither.
+path: '{{.Version}}/uv-{{.Arch}}-unknown-linux-gnu.tar.gz'
+platforms:
+  linux/_amd64/: linux/x86_64/
+  linux/_arm64/: linux/aarch64/
+---
+path: '{{.Version}}/uv-{{.Arch}}-apple-darwin.tar.gz'
+platforms:
+  darwin/_amd64/: darwin/x86_64/
+  darwin/_arm64/: darwin/aarch64/
+---
+path: '{{.Version}}/uv-{{.Arch}}-pc-windows-msvc.zip'
+platforms:
+  windows/_amd64/: windows/x86_64/
+  windows/_arm64/: windows/aarch64/
