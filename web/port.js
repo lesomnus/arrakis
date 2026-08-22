@@ -17,6 +17,7 @@ import {
 	REPO,
 	setPlatform,
 	svg,
+	trackOverflow,
 	wireCopy,
 } from './shared.js';
 
@@ -39,6 +40,7 @@ const el = {
 
 let port = null;
 let version = '';
+let fade = () => {};
 
 init();
 
@@ -71,6 +73,7 @@ async function init() {
 		return cmd.ok ? cmd.text : null;
 	});
 
+	fade = trackOverflow(el.cmd.parentElement, el.cmd);
 	drawVersionPicker();
 	drawPlatformPicker();
 	drawCommand();
@@ -123,6 +126,7 @@ function drawPlatformPicker() {
 
 function set(v) {
 	version = v;
+	fade = trackOverflow(el.cmd.parentElement, el.cmd);
 	drawVersionPicker();
 	drawCommand();
 }
@@ -132,6 +136,7 @@ function drawCommand() {
 	el.cmd.textContent = cmd.text;
 	el.cmd.parentElement.dataset.state = cmd.ok ? 'ok' : 'unavailable';
 	el.copy.disabled = !cmd.ok;
+	fade();
 
 	const p = platformOf(port);
 	const extra = p ? p.accepts.filter((a) => a !== p.arch) : [];

@@ -116,6 +116,18 @@ const SCENES = [
 		},
 	},
 	{
+		// A command too long for the box: the fade marks the edge it continues
+		// past. Scrolled to the middle so both edges show at once.
+		name: 'overflow',
+		theme: 'light',
+		viewport: { width: 460, height: 700 },
+		async act(page) {
+			await page.locator('.port', { hasText: 'protocolbuffers' }).hover();
+			await page.$eval('#cmd-text', (n) => n.scrollTo({ left: (n.scrollWidth - n.clientWidth) / 2 }));
+			await page.waitForTimeout(200);
+		},
+	},
+	{
 		name: 'phone',
 		theme: 'light',
 		viewport: PHONE,

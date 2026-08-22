@@ -14,6 +14,8 @@
 	--col-ver: 5rem;
 	--col-pick: 7.5rem;
 	--col-copy: 4.25rem;
+	--cmd-pad: 0.6rem;
+	--cmd-gap: 0.5rem;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -223,21 +225,63 @@ code {
  * different row rewrites the text; it must not move anything on the page.
  */
 .cmd {
+	position: relative;
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) var(--col-copy);
-	gap: 0.5rem;
+	gap: var(--cmd-gap);
 	align-items: center;
 	margin-top: 0.9rem;
-	padding: 0.5rem 0.6rem;
+	padding: 0.5rem var(--cmd-pad);
 	border-radius: 8px;
 	background: var(--code-bg);
 }
 
+/*
+ * `scroll` rather than `auto`: on platforms that give a scrollbar its own space,
+ * `auto` makes the box taller the moment a command is long enough to need one.
+ * Reserving the gutter always keeps the height constant, and a transparent
+ * track means nothing shows when there is nothing to scroll.
+ */
 .cmd code {
-	overflow-x: auto;
+	overflow-x: scroll;
+	scrollbar-width: thin;
+	scrollbar-color: color-mix(in srgb, var(--muted) 45%, var(--code-bg)) transparent;
 	font-size: 0.8125rem;
 	line-height: 1.7;
 	white-space: pre;
+}
+
+/*
+ * A fade on whichever edge the command continues past, so a line that is cut
+ * off looks cut off. Anchored to the code column, not the whole box, and inert
+ * so it never eats a click meant for the text.
+ */
+.cmd::before,
+.cmd::after {
+	content: "";
+	position: absolute;
+	top: 1px;
+	bottom: 1px;
+	width: 1.6rem;
+	border-radius: inherit;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.12s ease;
+}
+
+.cmd::before {
+	left: 1px;
+	background: linear-gradient(to right, var(--code-bg) 45%, transparent);
+}
+
+.cmd::after {
+	right: calc(var(--cmd-pad) + var(--col-copy) + var(--cmd-gap));
+	background: linear-gradient(to left, var(--code-bg) 45%, transparent);
+}
+
+.cmd[data-fade~="left"]::before,
+.cmd[data-fade~="right"]::after {
+	opacity: 1;
 }
 
 .cmd[data-state="unavailable"] code,
@@ -623,8 +667,10 @@ footer a:hover {
    a piece the build did not stamp in takes its separator with it. */
 footer > *:not([hidden]) ~ *:not([hidden])::before {
 	content: "·";
+	display: inline-block;
 	margin-right: 0.4rem;
 	color: var(--line);
+	text-decoration: none;
 }
 
 .built {

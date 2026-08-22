@@ -278,6 +278,26 @@ export function label(text) {
 }
 
 /**
+ * Mark `box` with which edges its scroller still has content past, so CSS can
+ * fade them. Returns the updater, to be called whenever the content changes --
+ * a ResizeObserver sees the box resize but not a shorter string replacing a
+ * longer one at the same width.
+ */
+export function trackOverflow(box, scroller) {
+	const update = () => {
+		const slack = scroller.scrollWidth - scroller.clientWidth;
+		const left = scroller.scrollLeft > 1;
+		const right = scroller.scrollLeft < slack - 1;
+		box.dataset.fade = [left ? 'left' : '', right ? 'right' : ''].filter(Boolean).join(' ');
+	};
+
+	scroller.addEventListener('scroll', update, { passive: true });
+	new ResizeObserver(update).observe(scroller);
+	update();
+	return update;
+}
+
+/**
  * Wire a button to copy `textOf()`, with feedback that resets itself.
  * The button sits in a fixed-width grid track, so swapping the label cannot
  * move anything even though "copied" is longer than "copy".

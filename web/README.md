@@ -154,12 +154,29 @@ Only Chromium can style options inside an open `<select>`, so elsewhere the
 separators show and the dimming does not. The separators carry the structure, so
 that degrades acceptably.
 
+### The command box
+
+The box is one height whatever it holds. `overflow-x: scroll` rather than
+`auto`, because on platforms that give a scrollbar its own space `auto` makes
+the box taller the moment a command is long enough to need one; reserving the
+gutter always keeps it constant, and a transparent track means nothing shows
+when there is nothing to scroll. Whichever edge the command continues past gets
+a gradient, driven by a `data-fade` attribute the scroll handler keeps up to
+date, so a line that is cut off looks cut off.
+
+**Headless Chromium draws no scrollbar at all**, with or without
+`--disable-features=OverlayScrollbar` and on both the headless shell and the
+full channel: the gutter measures zero either way. So neither the scrollbar
+styling nor the height-constancy it protects can be checked by `tools/shot.mjs`
+— `tools/probe.mjs` asserts the height never changes, but it would pass with or
+without the fix here. Both need a real browser.
+
+### The version dropdown, continued
+
 The picker's scrollbar is styled with `scrollbar-width` / `scrollbar-color`
 rather than the `::-webkit-scrollbar` pseudo-elements: Chrome ignores those once
 `scrollbar-color` is set, and chaining them after `::picker()` is not something
-the selector grammar allows. **This is the one thing `tools/shot.mjs` cannot
-check** -- headless Chromium draws no scrollbar at all, styled or not, so it
-needs a real browser.
+the selector grammar allows. Like the command box's, this cannot be checked here; see above.
 
 ### Why the probe exists
 

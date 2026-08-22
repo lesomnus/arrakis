@@ -14,6 +14,7 @@ import {
 	platformsInIndex,
 	setPlatform,
 	svg,
+	trackOverflow,
 	wireCopy,
 } from './shared.js';
 
@@ -50,6 +51,8 @@ const pinned = new Map();
 let focusedId = null;
 let hoveredId = null;
 let shown = [];
+/** Refreshes the command box's edge fades; set once the box exists. */
+let fade = () => {};
 
 init();
 
@@ -64,6 +67,7 @@ async function init() {
 	}
 
 	drawPicker();
+	fade = trackOverflow(el.cmd, el.cmdText);
 	wireCopy(el.cmdCopy, () => {
 		const port = activePort();
 		if (!port) return null;
@@ -221,6 +225,8 @@ function drawCommand() {
 		el.cmd.dataset.state = 'empty';
 		el.cmdText.textContent = shown.length > 0 ? 'point at a port for its command' : 'nothing to show';
 		el.cmdCopy.disabled = true;
+		el.cmdText.scrollLeft = 0;
+		fade();
 		return;
 	}
 
@@ -230,6 +236,7 @@ function drawCommand() {
 	el.cmdCopy.disabled = !cmd.ok;
 
 	for (const li of el.results.children) li.dataset.active = String(li.dataset.id === port.id);
+	fade();
 }
 
 function drawPicker() {

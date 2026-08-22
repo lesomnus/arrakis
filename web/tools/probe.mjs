@@ -101,11 +101,52 @@ console.log('\nstability');
 	await page.locator('.port').nth(4).locator('select').selectOption({ index: 1 });
 	check('hovering and picking a version moves no row', (await geometry()) === before);
 
-	const cmdBefore = await page.$eval('#cmd', (n) => n.getBoundingClientRect().height);
+	const cmdHeight = () => page.$eval('#cmd', (n) => n.getBoundingClientRect().height);
+	const heights = new Set();
+	for (const i of [0, 2, 6]) {
+		await page.locator('.port').nth(i).hover();
+		heights.add(await cmdHeight());
+	}
+
 	await page.locator('#os .chip', { hasText: 'windows' }).click();
 	await page.locator('.port', { hasText: 'arks' }).hover();
-	const cmdAfter = await page.$eval('#cmd', (n) => n.getBoundingClientRect().height);
-	check('the command box keeps its height when there is no build', cmdBefore === cmdAfter, `${cmdBefore} -> ${cmdAfter}`);
+	heights.add(await cmdHeight());
+
+	// A long command scrolls sideways; reserving the scrollbar gutter is what
+	// keeps that from making the box taller.
+	await page.locator('#os .chip', { hasText: 'linux' }).click();
+	await page.setViewportSize({ width: 420, height: 1000 });
+	await page.locator('.port').nth(0).hover();
+	heights.add(await cmdHeight());
+	await page.setViewportSize({ width: 900, height: 1000 });
+
+	check('the command box is one height, always', heights.size === 1, `saw ${[...heights].join(', ')}`);
+}
+
+// --- the fade marks the edge the command continues past ----------------------
+console.log('\noverflow fades');
+{
+	await page.setViewportSize({ width: 420, height: 1000 });
+	await page.locator('.port', { hasText: 'protocolbuffers' }).hover();
+	await page.waitForTimeout(60);
+
+	const fade = () => page.$eval('#cmd', (n) => n.dataset.fade ?? '');
+	const scrollable = await page.$eval('#cmd-text', (n) => n.scrollWidth - n.clientWidth);
+	check('a long command actually overflows at this width', scrollable > 20, `slack ${scrollable}`);
+	check('fades right when there is more to the right', (await fade()).includes('right'), `fade="${await fade()}"`);
+	check('no left fade at the start', !(await fade()).includes('left'), `fade="${await fade()}"`);
+
+	await page.$eval('#cmd-text', (n) => n.scrollTo({ left: n.scrollWidth }));
+	await page.waitForTimeout(60);
+	check('fades left once scrolled to the end', (await fade()) === 'left', `fade="${await fade()}"`);
+
+	await page.$eval('#cmd-text', (n) => n.scrollTo({ left: (n.scrollWidth - n.clientWidth) / 2 }));
+	await page.waitForTimeout(60);
+	check('fades both while in the middle', (await fade()) === 'left right', `fade="${await fade()}"`);
+
+	await page.setViewportSize({ width: 900, height: 1000 });
+	await page.waitForTimeout(60);
+	check('no fade when the command fits', (await fade()) === '', `fade="${await fade()}"`);
 }
 
 await browser.close();
