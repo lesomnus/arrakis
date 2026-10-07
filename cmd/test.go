@@ -19,7 +19,7 @@ func NewCmdTest() *xli.Command {
 		Brief: "Test if there are conflicts",
 
 		Flags: flg.Flags{
-			&flg.String{Name: "port", Value: &default_port, Brief: "Path to the port directory"},
+			&flg.String{Name: "port", Default: &default_port, Brief: "Path to the port directory"},
 		},
 
 		Handler: xli.OnRun(func(ctx context.Context, cmd *xli.Command, next xli.Next) error {
