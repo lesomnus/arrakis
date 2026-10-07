@@ -20,7 +20,7 @@ func NewCmdBump() *xli.Command {
 		Brief: "Discover new versions from sources and update versions files",
 
 		Flags: flg.Flags{
-			&flg.String{Name: "port", Value: &default_port, Brief: "Path to the port directory"},
+			&flg.String{Name: "port", Default: &default_port, Brief: "Path to the port directory"},
 			&flg.Switch{Name: "dry-run", Brief: "Print changes without writing files"},
 		},
 

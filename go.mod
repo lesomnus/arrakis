@@ -3,7 +3,7 @@ module github.com/lesomnus/arrakis
 go 1.25.4
 
 require (
-	github.com/lesomnus/xli v0.0.0-20251129214310-274b1fcfb863
+	github.com/lesomnus/xli v0.0.0-20261007103221-181d76ac7923
 	github.com/stretchr/testify v1.11.1
 	go.yaml.in/yaml/v4 v4.0.0-rc.4
 	golang.org/x/mod v0.38.0
